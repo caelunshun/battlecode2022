@@ -36,7 +36,6 @@ public class RobotBuilder {
             case WATCHTOWER:
                 robot.addAttachment(new WatchtowerAttachment(robot));
                 robot.addAttachment(new AttackAttachment(robot));
-                robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case MINER:
                 robot.addAttachment(new MinerAttachment(robot));

@@ -58,7 +58,9 @@ public class BuilderAttachment extends Attachment {
                 }
             }
         }
+        healRobots();
     }
+
 
     public boolean wantsToBuildLab() {
         if (rc.getTeamLeadAmount(rc.getTeam()) > 2400) {
@@ -78,5 +80,16 @@ public class BuilderAttachment extends Attachment {
             return checks;
         }
         return null;
+    }
+    public void healRobots() throws GameActionException{
+        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
+        for(int i = robots.length; i >= 0; i--){
+            if(robots[i].getType() == RobotType.LABORATORY || robots[i].getType() == RobotType.WATCHTOWER){
+                if(rc.canRepair(robots[i].getLocation())) {
+                    rc.repair(robots[i].getLocation());
+                    return;
+                }
+            }
+        }
     }
 }
