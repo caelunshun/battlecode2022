@@ -19,15 +19,15 @@ public final class Navigator {
         for (Direction dir : Util.DIRECTIONS) {
             MapLocation target = robot.getRc().getLocation().add(dir);
             int dist = target.distanceSquaredTo(location);
-            int rubbleFactor = (int) (robot.getRc().senseRubble(target) * 0.1);
+            int rubbleFactor = (int) (robot.getRc().senseRubble(target) * 0.2);
             int score = dist + rubbleFactor;
-            if (score < bestScore || bestDir == null) {
+            if ((score < bestScore || bestDir == null) && robot.getRc().canMove(dir)) {
                 bestDir = dir;
                 bestScore = score;
             }
         }
 
-        if (bestDir != null && robot.getRc().canMove(bestDir)) {
+        if (bestDir != null) {
             robot.getRc().move(bestDir);
         }
     }

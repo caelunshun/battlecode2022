@@ -100,14 +100,23 @@ public final class Robot {
         return comms;
     }
 
-    public void moveRandom() throws GameActionException{
-        Util.shuffle(Util.DIRECTIONS);
-        for(Direction dir : Util.DIRECTIONS) {
-            if(rc.canMove(dir)){
-                rc.move(dir);
-                break;
-            }
+    private Direction moveRandomDirection;
 
+    public void moveRandom() throws GameActionException{
+        if (!rc.isMovementReady()) return;
+        if (moveRandomDirection == null || !rc.canMove(moveRandomDirection)) {
+            moveRandomDirection = Util.DIRECTIONS[Util.getRng().nextInt(Util.DIRECTIONS.length)];
+        }
+
+        float choice = Util.getRng().nextFloat();
+        if (choice < 0.03) {
+            moveRandomDirection = moveRandomDirection.rotateLeft();
+        } else if (choice < 0.06) {
+            moveRandomDirection = moveRandomDirection.rotateRight();
+        }
+
+        if (rc.canMove(moveRandomDirection)) {
+            rc.move(moveRandomDirection);
         }
     }
 }
