@@ -58,5 +58,6 @@ public class Util {
             case CENTER:
                 return Direction.CENTER;
         }
+        return null;
     }
 }
