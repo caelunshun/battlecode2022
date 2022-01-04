@@ -2,10 +2,7 @@ package prototype1;
 
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import prototype1.archon.ArchonAttachment;
-import prototype1.archon.LaboratoryAttachment;
-import prototype1.archon.MinerAttachment;
-import prototype1.archon.SoldierAttachment;
+import prototype1.archon.*;
 
 public class RobotBuilder {
     private RobotType type;
@@ -29,6 +26,9 @@ public class RobotBuilder {
                 robot.addAttachment(new LaboratoryAttachment(robot));
                 break;
             case WATCHTOWER:
+                robot.addAttachment(new WatchtowerAttachment(robot));
+                robot.addAttachment(new AttackAttachment(robot));
+                robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case MINER:
                 robot.addAttachment(new MinerAttachment(robot));
@@ -37,6 +37,8 @@ public class RobotBuilder {
                 break;
             case SOLDIER:
                 robot.addAttachment(new SoldierAttachment(robot));
+                robot.addAttachment(new AttackAttachment(robot));
+                robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case SAGE:
                 break;
