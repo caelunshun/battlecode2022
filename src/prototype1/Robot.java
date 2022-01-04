@@ -1,9 +1,6 @@
 package prototype1;
 
-import battlecode.common.Clock;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 import prototype1.comms.Communications;
 import prototype1.comms.LeadCluster;
 
@@ -92,5 +89,16 @@ public final class Robot {
 
     public Communications getComms() {
         return comms;
+    }
+
+    public void moveRandom() throws GameActionException{
+        Util.shuffle(Util.DIRECTIONS);
+        for(Direction dir : Util.DIRECTIONS) {
+            if(rc.canMove(dir)){
+                rc.move(dir);
+                break;
+            }
+
+        }
     }
 }

@@ -25,8 +25,11 @@ public class BuilderAttachment extends Attachment {
             if(target==null){
                 target = chooseLocation();
             }
-            if(target!=null) {
+            if(target!=null && !rc.getLocation().isAdjacentTo(target)) {
                 nav.advanceToward(target);
+            }
+            if(rc.getLocation().equals(target)){
+                robot.moveRandom();
             }
         }
         //edgecase: already adjacent

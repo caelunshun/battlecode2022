@@ -12,16 +12,7 @@ public class RandomMovementAttachment extends Attachment {
     }
     @Override
     public void doTurn() throws GameActionException {
-        moveRandom();
+        robot.moveRandom();
     }
-    public void moveRandom() throws GameActionException{
-        Util.shuffle(Util.DIRECTIONS);
-        for(Direction dir : Util.DIRECTIONS) {
-            if(rc.canMove(dir)){
-                rc.move(dir);
-                break;
-            }
 
-        }
-    }
 }
