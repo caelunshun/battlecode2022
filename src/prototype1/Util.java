@@ -32,4 +32,27 @@ public class Util {
             array[j] = temp;
         }
     }
+
+    public static Direction oppositeDirection(Direction dir){
+        switch(dir){
+            case NORTH:
+                return Direction.SOUTH;
+            case NORTHEAST:
+                return Direction.SOUTHWEST;
+            case EAST:
+                return Direction.WEST;
+            case SOUTHEAST:
+                return Direction.NORTHWEST;
+            case SOUTH:
+                return Direction.NORTH;
+            case SOUTHWEST:
+                return Direction.NORTHEAST;
+            case WEST:
+                return Direction.EAST;
+            case NORTHWEST:
+                return Direction.SOUTHEAST;
+            case CENTER:
+                return Direction.CENTER;
+        }
+    }
 }

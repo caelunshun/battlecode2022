@@ -25,7 +25,7 @@ public class AttackAttachment extends Attachment {
         //looks for archons first
         //canbeoptimized find locations on first loop through
         for (MapLocation location : locations) {
-            if (rc.canSenseRobotAtLocation(location)) {
+            if (rc.canSenseRobotAtLocation(location) && rc.senseRobotAtLocation(location) != null) {
                 if (rc.senseRobotAtLocation(location).getType() == RobotType.ARCHON && rc.senseRobotAtLocation(location).getTeam() != rc.getTeam()) {
                     if (rc.canAttack(location)) {
                         rc.attack(location);
@@ -35,7 +35,7 @@ public class AttackAttachment extends Attachment {
             }
         }
         for (MapLocation location : locations) {
-            if (rc.canSenseRobotAtLocation(location)) {
+            if (rc.canSenseRobotAtLocation(location) && rc.senseRobotAtLocation(location) != null) {
                 if (rc.senseRobotAtLocation(location).getTeam() != rc.getTeam()) {
                     if (rc.canAttack(location)) {
                         rc.attack(location);
