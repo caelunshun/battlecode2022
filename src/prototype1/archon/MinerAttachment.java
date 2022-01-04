@@ -4,14 +4,14 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import prototype1.Attachment;
 import prototype1.Robot;
+import prototype1.Util;
+import prototype1.comms.LeadCluster;
 import prototype1.nav.Navigator;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
+
+    private MapLocation targetCluster;
 
     public MinerAttachment(Robot robot) {
         super(robot);
@@ -21,8 +21,9 @@ public class MinerAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         if (!mine()) {
-            lookForMetals();
+            moveTowardLead();
         }
+        rc.setIndicatorString("LC: " + robot.getLeadClusters().toString());
     }
 
     private boolean mine() throws GameActionException {
@@ -42,12 +43,33 @@ public class MinerAttachment extends Attachment {
         return false;
     }
 
-    private void lookForMetals() throws GameActionException {
+    private void moveTowardLead() throws GameActionException {
+        MapLocation nearestLead = null;
         for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared)) {
-            if (rc.senseLead(loc) > 1 || rc.senseGold(loc) > 0) {
-                nav.advanceToward(loc);
-                return;
+            if (rc.senseLead(loc) > 1) {
+                if (nearestLead == null || rc.getLocation().distanceSquaredTo(nearestLead) < nearestLead.distanceSquaredTo(rc.getLocation())) {
+                    nearestLead = loc;
+                }
             }
+        }
+
+        if (nearestLead != null) {
+            nav.advanceToward(nearestLead);
+            return;
+        }
+
+        if (targetCluster != null && rc.getLocation().distanceSquaredTo(targetCluster) <= 5) {
+            targetCluster = null;
+        }
+
+        // Move to a different lead cluster
+        if (targetCluster == null && !robot.getLeadClusters().isEmpty()) {
+            LeadCluster cluster = robot.getLeadClusters().get(Util.getRng().nextInt(robot.getLeadClusters().size()));
+            targetCluster = cluster.loc;
+        }
+
+        if (targetCluster != null) {
+            nav.advanceToward(targetCluster);
         }
     }
 }

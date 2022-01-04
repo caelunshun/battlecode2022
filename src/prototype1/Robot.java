@@ -50,7 +50,7 @@ public final class Robot {
         }
     }
 
-    private void update() throws GameActionException {
+    public void update() throws GameActionException {
         friendlyArchons = comms.readFriendlyArchons();
         enemyArchons = comms.readEnemyArchons();
         leadClusters = comms.readLeadClusters();
@@ -85,6 +85,15 @@ public final class Robot {
 
     public List<LeadCluster> getLeadClusters() {
         return leadClusters;
+    }
+
+    public boolean isLocationInLeadCluster(MapLocation loc) {
+        for (LeadCluster c : leadClusters) {
+            if (c.loc.distanceSquaredTo(loc) < 20) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Communications getComms() {

@@ -82,6 +82,7 @@ public final class Communications {
 
     public void addLeadCluster(LeadCluster cluster) throws GameActionException {
         int slot = getFreeSlot(SEGMENT_LEAD_CLUSTERS);
+        if (slot == -1) return;
         BitEncoder enc = new BitEncoder();
         enc.writeMapLocation(cluster.loc);
         enc.write(cluster.numClaims, 4);

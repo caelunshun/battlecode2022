@@ -21,6 +21,10 @@ public class Util {
 
     private final static Random rng = new Random(63125);
 
+    public static Random getRng() {
+        return rng;
+    }
+
     /**
      * The Fisher-Yates shuffle
      */
