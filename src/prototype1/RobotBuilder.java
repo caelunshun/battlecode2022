@@ -3,6 +3,7 @@ package prototype1;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype1.archon.ArchonAttachment;
+import prototype1.archon.LaboratoryAttachment;
 
 public class RobotBuilder {
     private RobotType type;
@@ -23,6 +24,7 @@ public class RobotBuilder {
                 robot.addAttachment(new ArchonAttachment(robot));
                 break;
             case LABORATORY:
+                robot.addAttachment(new LaboratoryAttachment(robot));
                 break;
             case WATCHTOWER:
                 break;
