@@ -37,7 +37,6 @@ public final class Communications {
         List<MapLocation> res = new ArrayList<>(4);
         for (int i = SEGMENT_FRIENDLY_ARCHONS.start; i < SEGMENT_FRIENDLY_ARCHONS.end; i++) {
             if (!isSlotFree(i)) {
-                System.out.println("read " + readSlot(i));
                 BitDecoder dec = new BitDecoder(readSlot(i));
                 res.add(dec.readMapLocation());
             }
@@ -72,7 +71,6 @@ public final class Communications {
         BitEncoder enc = new BitEncoder();
         enc.writeMapLocation(loc);
         writeSlot(slot, enc.finish());
-        System.out.println("write " + loc + " - " + enc.finish());
     }
 
     public void addEnemyArchon(MapLocation loc) throws GameActionException {
@@ -104,7 +102,7 @@ public final class Communications {
     }
 
     private int readSlot(int index) throws GameActionException {
-        int a = rc.readSharedArray(index + 1) - 1;
+        int a = rc.readSharedArray(index * 2) - 1;
         int b = rc.readSharedArray(index * 2 + 1) - 1;
         return a | (b << 16);
     }
