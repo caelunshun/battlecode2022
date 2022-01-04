@@ -1,5 +1,6 @@
 package prototype1;
 
+import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
@@ -38,6 +39,7 @@ public final class Robot {
                 rc.setIndicatorString("ERROR - Exception");
                 e.printStackTrace();;
             }
+            Clock.yield();
         }
     }
 
