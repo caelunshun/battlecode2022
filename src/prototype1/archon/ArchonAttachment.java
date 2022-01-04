@@ -2,6 +2,7 @@ package prototype1.archon;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import prototype1.Attachment;
 import prototype1.Robot;
@@ -18,6 +19,7 @@ public class ArchonAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         build();
+        repair();
     }
 
     private void build() throws GameActionException {
@@ -69,5 +71,20 @@ public class ArchonAttachment extends Attachment {
             }
         }
         return Direction.CENTER;
+    }
+
+    private void repair() throws GameActionException{
+        if(!rc.isActionReady()){
+            return;
+        }
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
+        for(RobotInfo robs :nearbyRobots){
+            if(robs.getHealth() < robs.getType().health){
+                if(rc.canRepair(robs.getLocation())){
+                    rc.repair(robs.getLocation());
+                    return;
+                }
+            }
+        }
     }
 }

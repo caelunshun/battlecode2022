@@ -45,29 +45,18 @@ public class RobotBuilder {
                 robot.addAttachment(new BuilderAttachment(robot));
                 break;
             case SOLDIER:
-                if(robot.getComms().getBuildIndex() > 3) {
-                    robot.addAttachment(new SoldierAttachment(robot));
-                    robot.addAttachment(new AttackAttachment(robot));
-                    robot.addAttachment(new RandomMovementAttachment(robot));
-                }
-                if(robot.getComms().getBuildIndex() == 0) {
-                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.ROTATIONAL));
-                    robot.addAttachment(new SoldierAttachment(robot));
-                    robot.addAttachment(new AttackAttachment(robot));
-                    robot.addAttachment(new RandomMovementAttachment(robot));
-                }
-                if(robot.getComms().getBuildIndex() == 1) {
-                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.HORIZONTAL));
-                    robot.addAttachment(new SoldierAttachment(robot));
-                    robot.addAttachment(new AttackAttachment(robot));
-                    robot.addAttachment(new RandomMovementAttachment(robot));
-                }
                 if(robot.getComms().getBuildIndex() == 2) {
-                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
-                    robot.addAttachment(new SoldierAttachment(robot));
-                    robot.addAttachment(new AttackAttachment(robot));
-                    robot.addAttachment(new RandomMovementAttachment(robot));
+                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.ROTATIONAL));
                 }
+                if(robot.getComms().getBuildIndex() == 3) {
+                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.HORIZONTAL));
+                }
+                if(robot.getComms().getBuildIndex() == 4) {
+                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
+                }
+                robot.addAttachment(new SoldierAttachment(robot));
+                robot.addAttachment(new AttackAttachment(robot));
+                robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case SAGE:
                 break;
