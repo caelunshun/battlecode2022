@@ -7,6 +7,7 @@ import prototype1.Robot;
 import prototype1.nav.Navigator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MinerAttachment extends Attachment {

@@ -10,8 +10,9 @@ import prototype1.Util;
 public class ArchonAttachment extends Attachment {
     private int buildIndex = 0;
 
-    public ArchonAttachment(Robot robot) {
+    public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
+        robot.getComms().addFriendlyArchon(rc.getLocation());
     }
 
     @Override

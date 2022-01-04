@@ -2,7 +2,10 @@ package prototype1;
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import prototype1.comms.Communications;
+import prototype1.comms.LeadCluster;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +24,15 @@ import java.util.List;
 public final class Robot {
     private RobotController rc;
     private List<Attachment> attachments = new ArrayList<>();
+    private Communications comms;
+
+    private List<MapLocation> friendlyArchons;
+    private List<MapLocation> enemyArchons;
+    private List<LeadCluster> leadClusters;
 
     public Robot(RobotController rc) {
         this.rc = rc;
+        comms = new Communications(rc);
     }
 
     public RobotController getRc() {
@@ -34,6 +43,7 @@ public final class Robot {
         while(true) {
             try {
                 rc.setIndicatorString("OK");
+                update();
                 doTurn();
             } catch (Exception e) {
                 rc.setIndicatorString("ERROR - Exception");
@@ -41,6 +51,12 @@ public final class Robot {
             }
             Clock.yield();
         }
+    }
+
+    private void update() throws GameActionException {
+        friendlyArchons = comms.readFriendlyArchons();
+        enemyArchons = comms.readEnemyArchons();
+        leadClusters = comms.readLeadClusters();
     }
 
     private void doTurn() throws GameActionException {
@@ -60,5 +76,21 @@ public final class Robot {
             }
         }
         return null;
+    }
+
+    public List<MapLocation> getFriendlyArchons() {
+        return friendlyArchons;
+    }
+
+    public List<MapLocation> getEnemyArchons() {
+        return enemyArchons;
+    }
+
+    public List<LeadCluster> getLeadClusters() {
+        return leadClusters;
+    }
+
+    public Communications getComms() {
+        return comms;
     }
 }

@@ -6,7 +6,7 @@ import battlecode.common.MapLocation;
 import prototype1.Robot;
 import prototype1.Util;
 
-public class Navigator {
+public final class Navigator {
     private Robot robot;
 
     public Navigator(Robot robot) {

@@ -1,23 +1,24 @@
 package prototype1;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype1.archon.*;
 
 public class RobotBuilder {
-    private RobotType type;
+    private final RobotType type;
 
     public RobotBuilder(RobotType type) {
         this.type = type;
     }
 
-    public Robot build(RobotController rc) {
+    public Robot build(RobotController rc) throws GameActionException {
         Robot robot = new Robot(rc);
         addAttachments(robot);
         return robot;
     }
 
-    private void addAttachments(Robot robot) {
+    private void addAttachments(Robot robot) throws GameActionException  {
         switch (type) {
             case ARCHON:
                 robot.addAttachment(new ArchonAttachment(robot));
