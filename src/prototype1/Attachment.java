@@ -1,11 +1,12 @@
 package prototype1;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
 /**
  * A behavior attached to a robot.
  */
-public class Attachment {
+public abstract class Attachment {
     protected Robot robot;
     protected RobotController rc;
 
@@ -13,4 +14,9 @@ public class Attachment {
         this.robot = robot;
         this.rc = robot.getRc();
     }
+
+    /**
+     * Invoked each turn the robot runs.
+     */
+    public abstract void doTurn() throws GameActionException;
 }

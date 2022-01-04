@@ -6,7 +6,7 @@ import battlecode.common.Direction;
  * Assorted utilities.
  */
 public class Util {
-    public static final Direction[] directions = {
+    public static final Direction[] DIRECTIONS = {
             Direction.NORTH,
             Direction.NORTHEAST,
             Direction.EAST,

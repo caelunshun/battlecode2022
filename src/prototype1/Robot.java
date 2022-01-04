@@ -1,6 +1,10 @@
 package prototype1;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The core robot class.
@@ -15,6 +19,7 @@ import battlecode.common.RobotController;
  */
 public final class Robot {
     private RobotController rc;
+    private List<Attachment> attachments = new ArrayList<>();
 
     public Robot(RobotController rc) {
         this.rc = rc;
@@ -22,5 +27,36 @@ public final class Robot {
 
     public RobotController getRc() {
         return rc;
+    }
+
+    public void run() {
+        while(true) {
+            try {
+                rc.setIndicatorString("OK");
+                doTurn();
+            } catch (Exception e) {
+                rc.setIndicatorString("ERROR - Exception");
+                e.printStackTrace();;
+            }
+        }
+    }
+
+    private void doTurn() throws GameActionException {
+        for (Attachment attachment : attachments) {
+            attachment.doTurn();
+        }
+    }
+
+    public void addAttachment(Attachment attachment) {
+        attachments.add(attachment);
+    }
+
+    public <T> T getAttachment(Class<T> type) {
+        for (Attachment attachment : attachments) {
+            if (attachment.getClass().equals(type)) {
+                return (T) attachment;
+            }
+        }
+        return null;
     }
 }
