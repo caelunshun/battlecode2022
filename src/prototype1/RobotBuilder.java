@@ -5,10 +5,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype1.archon.*;
 import prototype1.builder.BuilderAttachment;
-import prototype1.generic.ArchonSpotterAttachment;
-import prototype1.generic.AttackAttachment;
-import prototype1.generic.RandomMovementAttachment;
-import prototype1.generic.ScoutAttachment;
+import prototype1.generic.*;
 import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
 import prototype1.soldier.SoldierAttachment;
@@ -48,9 +45,29 @@ public class RobotBuilder {
                 robot.addAttachment(new BuilderAttachment(robot));
                 break;
             case SOLDIER:
+                if(robot.getComms().getBuildIndex() > 3) {
                     robot.addAttachment(new SoldierAttachment(robot));
                     robot.addAttachment(new AttackAttachment(robot));
                     robot.addAttachment(new RandomMovementAttachment(robot));
+                }
+                if(robot.getComms().getBuildIndex() == 0) {
+                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.ROTATIONAL));
+                    robot.addAttachment(new SoldierAttachment(robot));
+                    robot.addAttachment(new AttackAttachment(robot));
+                    robot.addAttachment(new RandomMovementAttachment(robot));
+                }
+                if(robot.getComms().getBuildIndex() == 1) {
+                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.HORIZONTAL));
+                    robot.addAttachment(new SoldierAttachment(robot));
+                    robot.addAttachment(new AttackAttachment(robot));
+                    robot.addAttachment(new RandomMovementAttachment(robot));
+                }
+                if(robot.getComms().getBuildIndex() == 2) {
+                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
+                    robot.addAttachment(new SoldierAttachment(robot));
+                    robot.addAttachment(new AttackAttachment(robot));
+                    robot.addAttachment(new RandomMovementAttachment(robot));
+                }
                 break;
             case SAGE:
                 break;

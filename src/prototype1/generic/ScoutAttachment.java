@@ -61,13 +61,14 @@ public MapLocation getSymmetryLocation(MapLocation homeArchon, SymmetryType type
             MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
             return enemyToCheck;
         }
-    if(typeToCheck == SymmetryType.ROTATIONAL){
-        int xCoordinate = homeArchon.x;
-        int yCoordinate = homeArchon.y;
-        xCoordinate = rc.getMapWidth() - xCoordinate;
-        yCoordinate = rc.getMapHeight() - yCoordinate;
-        MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
-        return enemyToCheck;
-    }
+        if(typeToCheck == SymmetryType.ROTATIONAL){
+            int xCoordinate = homeArchon.x;
+            int yCoordinate = homeArchon.y;
+            xCoordinate = rc.getMapWidth() - xCoordinate;
+            yCoordinate = rc.getMapHeight() - yCoordinate;
+            MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
+            return enemyToCheck;
+      }
+    return null;
 }
 }
