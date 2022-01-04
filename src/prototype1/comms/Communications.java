@@ -100,6 +100,14 @@ public final class Communications {
         writeSlot(slot, enc.finish());
     }
 
+    public int getBuildIndex() throws GameActionException {
+        return rc.readSharedArray(63);
+    }
+
+    public void setBuildIndex(int index) throws GameActionException {
+        rc.writeSharedArray(63, index);
+    }
+
     private int getFreeSlot(Range segment) throws GameActionException {
         for (int i = segment.start; i < segment.end; i++) {
             if (isSlotFree(i)) {

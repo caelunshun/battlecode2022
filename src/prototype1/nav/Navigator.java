@@ -18,6 +18,11 @@ public final class Navigator {
         Direction bestDir = null;
         for (Direction dir : Util.DIRECTIONS) {
             MapLocation target = robot.getRc().getLocation().add(dir);
+            if (target.x < 0 || target.y < 0
+                    || target.x >= robot.getRc().getMapWidth()
+                    || target.y >= robot.getRc().getMapHeight()) {
+                continue;
+            }
             int dist = target.distanceSquaredTo(location);
             int rubbleFactor = (int) (robot.getRc().senseRubble(target) * 0.2);
             int score = dist + rubbleFactor;

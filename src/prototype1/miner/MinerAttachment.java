@@ -7,16 +7,18 @@ import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.nav.Navigator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
-    private final LeadGrid leadGrid;
+    private final List<MapLocation> leadLocations = new ArrayList<>(16);
 
     private MapLocation targetTile;
 
     public MinerAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
-        this.leadGrid = new LeadGrid(robot);
     }
 
     @Override
