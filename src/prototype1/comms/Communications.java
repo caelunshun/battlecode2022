@@ -80,6 +80,17 @@ public final class Communications {
         writeSlot(slot, enc.finish());
     }
 
+    public void removeEnemyArchon(MapLocation loc) throws GameActionException {
+        for (int i = SEGMENT_ENEMY_ARCHONS.start; i < SEGMENT_ENEMY_ARCHONS.end; i++) {
+            if (!isSlotFree(i)) {
+                BitDecoder dec = new BitDecoder(readSlot(i));
+                if (dec.readMapLocation().equals(loc)) {
+                    clearSlot(i);
+                }
+            }
+        }
+    }
+
     public void addLeadCluster(LeadCluster cluster) throws GameActionException {
         int slot = getFreeSlot(SEGMENT_LEAD_CLUSTERS);
         if (slot == -1) return;
@@ -100,6 +111,10 @@ public final class Communications {
 
     private boolean isSlotFree(int index) throws GameActionException {
         return rc.readSharedArray(index * 2) == 0;
+    }
+
+    private void clearSlot(int index) throws GameActionException {
+        rc.writeSharedArray(index * 2, 0);
     }
 
     private int readSlot(int index) throws GameActionException {

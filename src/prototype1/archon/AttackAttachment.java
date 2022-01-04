@@ -5,16 +5,34 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
 import prototype1.Attachment;
 import prototype1.Robot;
+import prototype1.nav.Navigator;
 
 public class AttackAttachment extends Attachment {
+    private Navigator nav;
 
     public AttackAttachment(Robot robot) {
         super(robot);
+        this.nav = new Navigator(robot);
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        advanceTowardEnemyArchon();
         lookForEnemy();
+    }
+
+    private void advanceTowardEnemyArchon() throws GameActionException {
+        MapLocation closestArchon = null;
+        for (MapLocation loc : robot.getEnemyArchons()) {
+            if (closestArchon == null
+                || closestArchon.distanceSquaredTo(rc.getLocation()) > loc.distanceSquaredTo(rc.getLocation())) {
+                closestArchon = loc;
+            }
+        }
+
+        if (closestArchon != null) {
+            nav.advanceToward(closestArchon);
+        }
     }
 
     public boolean lookForEnemy() throws GameActionException {

@@ -1,6 +1,7 @@
 package prototype1.archon;
 
 import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import prototype1.Attachment;
@@ -18,6 +19,15 @@ public class ArchonSpotterAttachment extends Attachment {
                 && !robot.getEnemyArchons().contains(info.location)) {
                 robot.getComms().addEnemyArchon(info.location);
                 rc.setIndicatorString("Enemy Archon " + info.location);
+            }
+        }
+
+        for (MapLocation loc : robot.getEnemyArchons()) {
+            if (rc.canSenseRobotAtLocation(loc)) {
+                RobotInfo rob = rc.senseRobotAtLocation(loc);
+                if (rob == null || rob.type != RobotType.ARCHON) {
+                    robot.getComms().removeEnemyArchon(loc);
+                }
             }
         }
     }
