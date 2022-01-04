@@ -48,16 +48,9 @@ public class RobotBuilder {
                 robot.addAttachment(new BuilderAttachment(robot));
                 break;
             case SOLDIER:
-                if(robot.getRc().getRoundNum() < 10){
-                    robot.addAttachment(new ScoutAttachment(robot));
                     robot.addAttachment(new SoldierAttachment(robot));
                     robot.addAttachment(new AttackAttachment(robot));
                     robot.addAttachment(new RandomMovementAttachment(robot));
-                } else {
-                    robot.addAttachment(new SoldierAttachment(robot));
-                    robot.addAttachment(new AttackAttachment(robot));
-                    robot.addAttachment(new RandomMovementAttachment(robot));
-                }
                 break;
             case SAGE:
                 break;
