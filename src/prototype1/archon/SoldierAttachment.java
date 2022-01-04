@@ -51,6 +51,7 @@ public class SoldierAttachment extends Attachment {
         return false;
     }
     public void moveRandom() throws GameActionException{
+        Util.shuffle(Util.DIRECTIONS);
         for(Direction dir : Util.DIRECTIONS) {
             if(rc.canMove(dir)){
                 rc.move(dir);
