@@ -39,7 +39,6 @@ public class MinerAttachment extends Attachment {
                 rc.setIndicatorString("Mined lead");
             }
         }
-        rc.setIndicatorString(robot.getFriendlyArchons().toString());
         return false;
     }
 
