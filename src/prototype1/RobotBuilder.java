@@ -4,6 +4,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype1.archon.ArchonAttachment;
 import prototype1.archon.LaboratoryAttachment;
+import prototype1.archon.MinerAttachment;
 
 public class RobotBuilder {
     private RobotType type;
@@ -29,6 +30,7 @@ public class RobotBuilder {
             case WATCHTOWER:
                 break;
             case MINER:
+                robot.addAttachment(new MinerAttachment(robot));
                 break;
             case BUILDER:
                 break;

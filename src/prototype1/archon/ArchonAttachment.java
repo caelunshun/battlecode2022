@@ -21,7 +21,7 @@ public class ArchonAttachment extends Attachment {
 
     private void build() throws GameActionException {
         RobotType type;
-        if (buildIndex % 3 < 2) {
+        if (buildIndex % 5 < 1) {
             type = RobotType.MINER;
         } else {
             type = RobotType.SOLDIER;
