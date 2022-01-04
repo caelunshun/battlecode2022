@@ -69,7 +69,7 @@ public class BuilderAttachment extends Attachment {
 
     public MapLocation chooseLocation() throws GameActionException {
         List<MapLocation> friendlyArchons = robot.getFriendlyArchons();
-        outer: for (MapLocation checks : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 100)) {
+        outer: for (MapLocation checks : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 400)) {
             for (MapLocation archons : friendlyArchons) {
                 if (archons.distanceSquaredTo(checks) < 100) {
                     continue outer;
