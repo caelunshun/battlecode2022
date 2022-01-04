@@ -27,8 +27,9 @@ public class MinerAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         spotLead();
-        if (!mine()) {
-            moveTowardLead();
+        mine();
+        if (!moveTowardCloseLead()) {
+            moveTowardDistantLead();
         }
     }
 
@@ -62,27 +63,44 @@ public class MinerAttachment extends Attachment {
                 rc.mineLead(loc);
                 rc.setIndicatorString("Mined lead");
             }
+
+            if (rc.senseLead(loc) == 1) {
+                leadGrid.getTile(loc).lastExhaustedRound = rc.getRoundNum();
+            }
         }
         return false;
     }
 
-    private void moveTowardLead() throws GameActionException {
-        MapLocation nearestLead = null;
+    private boolean moveTowardCloseLead() throws GameActionException {
+        MapLocation bestLead = null;
+        int bestScore = 0;
         for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared)) {
-            if (rc.senseLead(loc) > 1 || rc.senseGold(loc) > 0) {
-                if (nearestLead == null || rc.getLocation().distanceSquaredTo(nearestLead)
-                        < nearestLead.distanceSquaredTo(rc.getLocation())) {
-                    nearestLead = loc;
+            int lead = rc.senseLead(loc);
+            int gold = rc.senseGold(loc);
+            if (lead > 1 || gold > 0) {
+                int score = rc.getLocation().distanceSquaredTo(loc);
+                score -= lead * 5;
+                score -= gold * 50;
+
+                if (bestLead == null || score < bestScore) {
+                    bestLead = loc;
+                    bestScore = score;
                 }
+            }
+
+            if (Clock.getBytecodesLeft() < 1000) {
+                break;
             }
         }
 
-        if (nearestLead != null) {
-            nav.advanceToward(nearestLead);
-            rc.setIndicatorString("Spotted lead " + nearestLead);
-            return;
+        if (bestLead != null) {
+            nav.advanceToward(bestLead);
+            return true;
         }
+        return false;
+    }
 
+    private void moveTowardDistantLead() throws GameActionException {
         if (targetTile != null) {
             if (rc.getLocation().distanceSquaredTo(targetTile) <= 2) {
                 targetTile = null;
@@ -112,6 +130,11 @@ public class MinerAttachment extends Attachment {
             && Clock.getBytecodesLeft() > 1000) {
             MapLocation loc = nextLeadTileInQueue();
             LeadTile tile = leadGrid.getTile(loc);
+
+            if (rc.getRoundNum() - tile.lastExhaustedRound < 100) {
+                continue;
+            }
+
             int locScore = 0;
             locScore += (int) Math.sqrt(rc.getLocation().distanceSquaredTo(loc));
             locScore += 100 / (rc.getRoundNum() - tile.lastExhaustedRound + 1);

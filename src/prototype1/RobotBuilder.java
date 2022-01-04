@@ -42,6 +42,7 @@ public class RobotBuilder {
                 break;
             case BUILDER:
                 robot.addAttachment(new BuilderAttachment(robot));
+                robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case SOLDIER:
                 if(robot.getComms().getBuildIndex() == 2) {
