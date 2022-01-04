@@ -44,31 +44,7 @@ public MapLocation goToSpot(SymmetryType type) throws GameActionException{
             homeArchon = locations;
         }
     }
-    return getSymmetryLocation(homeArchon, type);
+    return type.getSymmetryLocation(homeArchon, rc);
 }
-public MapLocation getSymmetryLocation(MapLocation homeArchon, SymmetryType typeToCheck){
-        if(typeToCheck == SymmetryType.HORIZONTAL){
-            int xCoordinate = homeArchon.x;
-            int yCoordinate = homeArchon.y;
-            yCoordinate = rc.getMapHeight() - yCoordinate;
-            MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
-            return enemyToCheck;
-        }
-        if(typeToCheck == SymmetryType.VERTICAL){
-            int xCoordinate = homeArchon.x;
-            int yCoordinate = homeArchon.y;
-            xCoordinate = rc.getMapWidth() - xCoordinate;
-            MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
-            return enemyToCheck;
-        }
-        if(typeToCheck == SymmetryType.ROTATIONAL){
-            int xCoordinate = homeArchon.x;
-            int yCoordinate = homeArchon.y;
-            xCoordinate = rc.getMapWidth() - xCoordinate;
-            yCoordinate = rc.getMapHeight() - yCoordinate;
-            MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
-            return enemyToCheck;
-      }
-    return null;
-}
+
 }

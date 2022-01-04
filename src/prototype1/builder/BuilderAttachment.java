@@ -83,8 +83,16 @@ public class BuilderAttachment extends Attachment {
     }
     public void healRobots() throws GameActionException{
         RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
-        for(int i = robots.length; i >= 0; i--){
-            if(robots[i].getType() == RobotType.LABORATORY || robots[i].getType() == RobotType.WATCHTOWER){
+        for(int i = robots.length - 1; i >= 0; i--){
+            if(robots[i].getMode() == RobotMode.PROTOTYPE && (robots[i].getType() == RobotType.LABORATORY || robots[i].getType() == RobotType.WATCHTOWER)){
+                if(rc.canRepair(robots[i].getLocation())) {
+                    rc.repair(robots[i].getLocation());
+                    return;
+                }
+            }
+        }
+        for(int i = robots.length - 1; i >= 0; i--){
+            if((robots[i].getType() == RobotType.LABORATORY || robots[i].getType() == RobotType.WATCHTOWER)){
                 if(rc.canRepair(robots[i].getLocation())) {
                     rc.repair(robots[i].getLocation());
                     return;
