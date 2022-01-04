@@ -1,4 +1,4 @@
-package prototype1.archon;
+package prototype1.miner;
 
 import battlecode.common.MapLocation;
 

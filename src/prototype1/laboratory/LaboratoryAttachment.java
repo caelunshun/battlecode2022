@@ -1,4 +1,4 @@
-package prototype1.archon;
+package prototype1.laboratory;
 
 import battlecode.common.GameActionException;
 import prototype1.Attachment;

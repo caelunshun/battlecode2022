@@ -1,4 +1,4 @@
-package prototype1.archon;
+package prototype1.generic;
 
 import battlecode.common.*;
 import prototype1.Attachment;

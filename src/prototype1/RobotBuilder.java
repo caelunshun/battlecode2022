@@ -4,6 +4,15 @@ import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype1.archon.*;
+import prototype1.builder.BuilderAttachment;
+import prototype1.generic.ArchonSpotterAttachment;
+import prototype1.generic.AttackAttachment;
+import prototype1.generic.RandomMovementAttachment;
+import prototype1.generic.ScoutAttachment;
+import prototype1.laboratory.LaboratoryAttachment;
+import prototype1.miner.MinerAttachment;
+import prototype1.soldier.SoldierAttachment;
+import prototype1.watchtower.WatchtowerAttachment;
 
 public class RobotBuilder {
     private final RobotType type;

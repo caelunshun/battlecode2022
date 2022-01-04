@@ -1,12 +1,10 @@
-package prototype1.archon;
+package prototype1.miner;
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import prototype1.Attachment;
 import prototype1.Robot;
-import prototype1.Util;
-import prototype1.comms.LeadCluster;
 import prototype1.nav.Navigator;
 
 public class MinerAttachment extends Attachment {
