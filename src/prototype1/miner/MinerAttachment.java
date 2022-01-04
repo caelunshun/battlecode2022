@@ -12,20 +12,22 @@ import java.util.List;
 
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
-    private final List<MapLocation> leadLocations = new ArrayList<>(16);
+    private final List<MapLocation> leadTileQueue = new ArrayList<>();
+    private final LeadGrid leadGrid;
+    private int leadTileQueueCursor = 0;
 
     private MapLocation targetTile;
 
     public MinerAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
+        this.leadGrid = new LeadGrid(robot);
     }
 
     @Override
     public void doTurn() throws GameActionException {
         spotLead();
         if (!mine()) {
-            leadGrid.getTile(rc.getLocation()).roundLastVisited = rc.getRoundNum();
             moveTowardLead();
         }
     }
@@ -35,7 +37,10 @@ public class MinerAttachment extends Attachment {
                 rc.getType().visionRadiusSquared)) {
             if (rc.senseLead(loc) > 0) {
                 LeadTile tile = leadGrid.getTile(loc);
-                tile.addLead(loc);
+                if (!tile.known) {
+                    tile.known = true;
+                    leadTileQueue.add(loc);
+                }
             }
 
             if (Clock.getBytecodesLeft() < 1000) {
@@ -79,16 +84,13 @@ public class MinerAttachment extends Attachment {
         }
 
         if (targetTile != null) {
-            if (rc.getLocation().distanceSquaredTo(targetTile) <= 5) {
+            if (rc.getLocation().distanceSquaredTo(targetTile) <= 2) {
                 targetTile = null;
             }
         }
 
         if (targetTile == null) {
             targetTile = findTargetLeadTile();
-            if (targetTile != null) {
-                targetTile = targetTile.translate(3, 3);
-            }
         }
 
         if (targetTile != null) {
@@ -101,29 +103,33 @@ public class MinerAttachment extends Attachment {
     }
 
     private MapLocation findTargetLeadTile() throws GameActionException {
-        LeadTile[] tiles = leadGrid.getTiles();
+        int tries = 0;
 
+        MapLocation bestLoc = null;
         int bestScore = 0;
-        MapLocation bestTarget = null;
-        for (int i = 0; i < tiles.length; i++) {
-            if (tiles[i].lead == null) {
-                continue;
-            }
 
-            MapLocation origin = leadGrid.getLocationFromTileIndex(i);
+        while (tries < leadTileQueue.size()
+            && Clock.getBytecodesLeft() > 1000) {
+            MapLocation loc = nextLeadTileInQueue();
+            LeadTile tile = leadGrid.getTile(loc);
+            int locScore = 0;
+            locScore += (int) Math.sqrt(rc.getLocation().distanceSquaredTo(loc));
+            locScore += 100 / (rc.getRoundNum() - tile.lastExhaustedRound + 1);
 
-            int score = origin.distanceSquaredTo(rc.getLocation())
-                    - (int) Math.pow(tiles[i].lead.size(), 3);
-            if (rc.getRoundNum() - tiles[i].roundLastVisited < 80) {
-                continue;
-            }
-
-            if (bestTarget == null || score < bestScore) {
-                bestTarget = origin;
-                bestScore = score;
+            if (locScore < bestScore) {
+                bestLoc = loc;
+                bestScore = locScore;
             }
         }
 
-        return bestTarget;
+        return bestLoc;
+    }
+
+    private MapLocation nextLeadTileInQueue() {
+        MapLocation result = leadTileQueue.get(leadTileQueueCursor++);
+        if (leadTileQueueCursor >= leadTileQueue.size()) {
+            leadTileQueueCursor = 0;
+        }
+        return result;
     }
 }

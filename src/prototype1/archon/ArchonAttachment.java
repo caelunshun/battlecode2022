@@ -37,6 +37,8 @@ public class ArchonAttachment extends Attachment {
             type = RobotType.SAGE;
         } else if (currentBuildIndex % 6 == 0) {
             type = RobotType.BUILDER;
+        } else if (currentBuildIndex % 6 < 3) {
+            type = RobotType.MINER;
         } else {
             type = RobotType.SOLDIER;
         }
