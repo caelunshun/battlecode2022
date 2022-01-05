@@ -26,10 +26,20 @@ public final class Robot {
     private List<MapLocation> friendlyArchons;
     private List<MapLocation> enemyArchons;
     private List<LeadCluster> leadClusters;
+    private RobotInfo homeArchon;
 
-    public Robot(RobotController rc) {
+    public Robot(RobotController rc) throws GameActionException {
         this.rc = rc;
         comms = new Communications(rc);
+
+        for(Direction dir : Util.DIRECTIONS){
+            if(rc.canSenseRobotAtLocation(rc.getLocation().add(dir))){
+                RobotInfo info = rc.senseRobotAtLocation(rc.getLocation().add(dir));
+                if(info.getType() == RobotType.ARCHON && info.getTeam() == rc.getTeam()){
+                    homeArchon = info;
+                }
+            }
+        }
     }
 
     public RobotController getRc() {
@@ -85,6 +95,9 @@ public final class Robot {
 
     public List<LeadCluster> getLeadClusters() {
         return leadClusters;
+    }
+    public RobotInfo getHomeArchon(){
+        return homeArchon;
     }
 
     public boolean isLocationInLeadCluster(MapLocation loc) {

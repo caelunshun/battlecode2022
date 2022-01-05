@@ -30,5 +30,14 @@ public enum SymmetryType {
         }
         return null;
     }
+    public SymmetryType getNextSymmetryType(){
+        if(this == HORIZONTAL){
+            return ROTATIONAL;
+        }
+        if(this == ROTATIONAL){
+            return VERTICAL;
+        }
+        return HORIZONTAL;
+    }
 }
 

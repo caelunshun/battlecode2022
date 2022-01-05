@@ -12,7 +12,9 @@ public class ScoutAttachment extends Attachment {
     private MapLocation predictedLocation = null;
     private SymmetryType type;
     private boolean alreadyFound = false;
+    private boolean alreadyFoundAll = false;
     private Navigator nav;
+    private SymmetryType nextType;
 
     public ScoutAttachment(Robot robot, SymmetryType type) {
         super(robot);
@@ -22,9 +24,12 @@ public class ScoutAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        if(alreadyFoundAll){
+            return;
+        }
         if (!alreadyFound) {
             if (predictedLocation == null) {
-                predictedLocation = goToSpot(type);
+                predictedLocation = goToSpotNew(type, robot.getHomeArchon().getLocation());
             }
             if (predictedLocation != null) {
                 nav.advanceToward(predictedLocation);
@@ -33,8 +38,20 @@ public class ScoutAttachment extends Attachment {
             if (rc.getLocation().distanceSquaredTo(predictedLocation) < rc.getType().visionRadiusSquared) {
                 alreadyFound = true;
             }
+        } else{
+            if(nextType == null){
+                nextType = type.getNextSymmetryType();
+            } else {
+                nextType = nextType.getNextSymmetryType();
+            }
+            if(nextType == type){
+                alreadyFoundAll = true;
+                return;
+            }
+            alreadyFound = false;
+            predictedLocation = goToSpotNew(nextType, robot.getHomeArchon().getLocation());
         }
-        rc.setIndicatorString("Scout - " + type);
+        rc.setIndicatorString("Scout - " + nextType);
     }
 
     public MapLocation goToSpot(SymmetryType type) throws GameActionException {
@@ -47,6 +64,9 @@ public class ScoutAttachment extends Attachment {
                 homeArchon = locations;
             }
         }
+        return type.getSymmetryLocation(homeArchon, rc);
+    }
+    public MapLocation goToSpotNew(SymmetryType type, MapLocation homeArchon) throws GameActionException {
         return type.getSymmetryLocation(homeArchon, rc);
     }
 
