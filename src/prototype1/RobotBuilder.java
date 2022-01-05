@@ -5,6 +5,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype1.archon.*;
 import prototype1.builder.BuilderAttachment;
+import prototype1.builder.RushBuilderAttachment;
 import prototype1.generic.*;
 import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
@@ -41,8 +42,9 @@ public class RobotBuilder {
                 robot.addAttachment(new MinerAttachment(robot));
                 break;
             case BUILDER:
-                robot.addAttachment(new BuilderAttachment(robot));
-                robot.addAttachment(new RandomMovementAttachment(robot));
+                robot.addAttachment(new RushBuilderAttachment(robot));
+                /* robot.addAttachment(new BuilderAttachment(robot));
+                robot.addAttachment(new RandomMovementAttachment(robot)); */
                 break;
             case SOLDIER:
                 if(robot.getComms().getBuildIndex() == 2) {

@@ -37,15 +37,20 @@ public class ArchonAttachment extends Attachment {
             type = RobotType.MINER;
         } else if (rc.getTeamGoldAmount(rc.getTeam()) >= RobotType.SAGE.buildCostGold) {
             type = RobotType.SAGE;
-        } else if (currentBuildIndex % 6 == 0) {
+        } else if (currentBuildIndex % 6 < 2) {
             type = RobotType.BUILDER;
-        } else if (currentBuildIndex % 6 < 3) {
+        } else if (currentBuildIndex % 6 < 4) {
             type = RobotType.MINER;
         } else {
             type = RobotType.SOLDIER;
         }
 
         rc.setIndicatorString("Build #" + currentBuildIndex);
+
+        if (rc.getTeamLeadAmount(rc.getTeam()) < 200
+            && rc.getRoundNum() > 60) {
+            return;
+        }
 
         if (tryBuild(type)) {
             ++currentBuildIndex;

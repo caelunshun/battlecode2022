@@ -30,7 +30,7 @@ public class AttackAttachment extends Attachment {
             }
         }
 
-        if (closestArchon != null) {
+        if (closestArchon != null && closestArchon.distanceSquaredTo(rc.getLocation()) > 8) {
             nav.advanceToward(closestArchon);
         }
     }

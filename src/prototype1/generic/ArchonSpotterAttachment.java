@@ -23,7 +23,7 @@ public class ArchonSpotterAttachment extends Attachment {
         }
 
         for (MapLocation loc : robot.getEnemyArchons()) {
-            if (rc.canSenseRobotAtLocation(loc)) {
+            if (rc.canSenseLocation(loc)) {
                 RobotInfo rob = rc.senseRobotAtLocation(loc);
                 if (rob == null || rob.type != RobotType.ARCHON) {
                     robot.getComms().removeEnemyArchon(loc);
