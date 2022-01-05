@@ -55,7 +55,7 @@ public class AttackAttachment extends Attachment {
                 bestLocation = i;
             }
         }
-        if(rc.canAttack(robots[bestLocation].getLocation())){
+        if(robots.length > 0 && rc.canAttack(robots[bestLocation].getLocation())){
             rc.attack(robots[bestLocation].getLocation());
             return true;
         }
