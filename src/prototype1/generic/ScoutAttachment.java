@@ -13,17 +13,20 @@ public class ScoutAttachment extends Attachment {
     private SymmetryType type;
     private boolean alreadyFound = false;
     private Navigator nav;
-    public ScoutAttachment (Robot robot, SymmetryType type) {
+
+    public ScoutAttachment(Robot robot, SymmetryType type) {
         super(robot);
         this.type = type;
         this.nav = new Navigator(robot);
     }
+
     @Override
     public void doTurn() throws GameActionException {
-        if(!alreadyFound) {
+        if (!alreadyFound) {
             if (predictedLocation == null) {
                 predictedLocation = goToSpot(type);
-            } else {
+            }
+            if (predictedLocation != null) {
                 nav.advanceToward(predictedLocation);
             }
 
@@ -31,20 +34,20 @@ public class ScoutAttachment extends Attachment {
                 alreadyFound = true;
             }
         }
-
-
+        rc.setIndicatorString("Scout - " + type);
     }
-public MapLocation goToSpot(SymmetryType type) throws GameActionException{
-    List<MapLocation> friendlyArchons = robot.getFriendlyArchons();
-    MapLocation homeArchon = null;
-    int min = friendlyArchons.get(0).distanceSquaredTo(rc.getLocation());
-    for(MapLocation locations : friendlyArchons){
-        if(locations.distanceSquaredTo(rc.getLocation()) <= min){
-            min = locations.distanceSquaredTo(rc.getLocation());
-            homeArchon = locations;
+
+    public MapLocation goToSpot(SymmetryType type) throws GameActionException {
+        List<MapLocation> friendlyArchons = robot.getFriendlyArchons();
+        MapLocation homeArchon = null;
+        int min = friendlyArchons.get(0).distanceSquaredTo(rc.getLocation());
+        for (MapLocation locations : friendlyArchons) {
+            if (locations.distanceSquaredTo(rc.getLocation()) <= min) {
+                min = locations.distanceSquaredTo(rc.getLocation());
+                homeArchon = locations;
+            }
         }
+        return type.getSymmetryLocation(homeArchon, rc);
     }
-    return type.getSymmetryLocation(homeArchon, rc);
-}
 
 }

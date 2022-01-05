@@ -48,13 +48,13 @@ public class RobotBuilder {
                 robot.addAttachment(new RandomMovementAttachment(robot)); */
                 break;
             case SOLDIER:
-                if(robot.getComms().getBuildIndex() == 2) {
+                if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET) {
                     robot.addAttachment(new ScoutAttachment(robot, SymmetryType.ROTATIONAL));
                 }
-                if(robot.getComms().getBuildIndex() == 3) {
+                if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 1) {
                     robot.addAttachment(new ScoutAttachment(robot, SymmetryType.HORIZONTAL));
                 }
-                if(robot.getComms().getBuildIndex() == 4) {
+                if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 2) {
                     robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
                 }
                 robot.addAttachment(new SoldierAttachment(robot));

@@ -11,6 +11,8 @@ import prototype1.Util;
 public class ArchonAttachment extends Attachment {
     private int lastBuiltIndex = -1;
 
+    public static int SOLDIER_BUILDING_OFFSET = 3;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
@@ -29,9 +31,9 @@ public class ArchonAttachment extends Attachment {
         }
 
         RobotType type;
-        if (currentBuildIndex < 2) {
+        if (currentBuildIndex < SOLDIER_BUILDING_OFFSET - 1) {
             type = RobotType.MINER;
-        } else if (currentBuildIndex < 5) {
+        } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET + 2) {
             type = RobotType.SOLDIER;
         } else if (currentBuildIndex < 6) {
             type = RobotType.MINER;
