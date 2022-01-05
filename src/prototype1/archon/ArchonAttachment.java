@@ -112,11 +112,18 @@ public class ArchonAttachment extends Attachment {
 
     List<MapLocation> initialEnemyArchons = new ArrayList<>();
     List<MapLocation> initialFriendlyArchons = new ArrayList<>();
+    List<MapLocation> destroyedFriendlyArchons = new ArrayList<>();
 
     private void computeSymmetry() throws GameActionException {
         for (MapLocation enemy : robot.getEnemyArchons()) {
             if (!initialEnemyArchons.contains(enemy)) {
                 initialEnemyArchons.add(enemy);
+            }
+        }
+        for (MapLocation initialEnemy : initialEnemyArchons) {
+            if (!robot.getEnemyArchons().contains(initialEnemy)
+                && !destroyedFriendlyArchons.contains(initialEnemy)) {
+                destroyedFriendlyArchons.add(initialEnemy);
             }
         }
 
@@ -151,6 +158,17 @@ public class ArchonAttachment extends Attachment {
                 robot.getComms().setSymmetryType(possibleSymmetry.get(0));
             } else {
                 rc.setIndicatorString("SU: " + possibleSymmetry);
+            }
+        }
+
+        // Add enemy archons based on symmetry
+        SymmetryType symmetry = robot.getComms().getSymmetryType();
+        if (symmetry == null) return;
+        for (MapLocation friendly : initialFriendlyArchons) {
+            MapLocation enemy = symmetry.getSymmetryLocation(friendly, rc);
+            if (!robot.getEnemyArchons().contains(enemy) && !destroyedFriendlyArchons.contains(enemy)) {
+                robot.getComms().addEnemyArchon(enemy);
+                robot.update();
             }
         }
     }
