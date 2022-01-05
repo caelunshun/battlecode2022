@@ -30,7 +30,11 @@ public class ArchonAttachment extends Attachment {
         } else {
             rc.setIndicatorString("Symmetry Unknown");
         }
-        build();
+        if(rc.getRoundNum() < 1000) {
+            build();
+        } else{
+            tiebreakerMode();
+        }
         repair();
         computeSymmetry();
 
@@ -122,7 +126,7 @@ public class ArchonAttachment extends Attachment {
         }
         for (MapLocation initialEnemy : initialEnemyArchons) {
             if (!robot.getEnemyArchons().contains(initialEnemy)
-                && !destroyedFriendlyArchons.contains(initialEnemy)) {
+                    && !destroyedFriendlyArchons.contains(initialEnemy)) {
                 destroyedFriendlyArchons.add(initialEnemy);
             }
         }
@@ -169,6 +173,13 @@ public class ArchonAttachment extends Attachment {
             if (!robot.getEnemyArchons().contains(enemy) && !destroyedFriendlyArchons.contains(enemy)) {
                 robot.getComms().addEnemyArchon(enemy);
                 robot.update();
+            }
+        }
+    }
+    private void tiebreakerMode() throws GameActionException{
+        if(rc.getRoundNum() % 50 == 0 && rc.getTeamGoldAmount(rc.getTeam()) > 2000){
+            if(rc.canBuildRobot(RobotType.BUILDER, getAvailableBuildDirection())){
+                rc.buildRobot(RobotType.BUILDER, getAvailableBuildDirection() );
             }
         }
     }

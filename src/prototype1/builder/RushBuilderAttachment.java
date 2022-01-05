@@ -22,7 +22,12 @@ public class RushBuilderAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         boolean healedTowers = healWatchtowers();
-
+        if(rc.getRoundNum() == 1500){
+            robot.addAttachment(new BuilderAttachment(robot));
+        }
+        if(rc.getRoundNum() >= 1500){
+            return;
+        }
         if (!robot.getEnemyArchons().contains(targetArchon)) {
             targetArchon = null;
         }

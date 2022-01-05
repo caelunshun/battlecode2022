@@ -76,12 +76,14 @@ public class BuilderAttachment extends Attachment {
             prototypeToWorkOnID = 0;
             prototypeToWorkOn = null;
         }
-        nav.advanceToward(prototypeToWorkOn);
+        if(prototypeToWorkOn != null) {
+            nav.advanceToward(prototypeToWorkOn);
+        }
     }
 
 
     public boolean wantsToBuildLab() {
-        if (rc.getTeamLeadAmount(rc.getTeam()) > 2400) {
+        if (rc.getTeamLeadAmount(rc.getTeam()) > 1200) {
             return true;
         }
         return false;

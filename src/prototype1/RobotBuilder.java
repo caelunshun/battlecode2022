@@ -43,9 +43,13 @@ public class RobotBuilder {
                 robot.addAttachment(new MinerAttachment(robot));
                 break;
             case BUILDER:
-                robot.addAttachment(new RushBuilderAttachment(robot));
-                /* robot.addAttachment(new BuilderAttachment(robot));
-                robot.addAttachment(new RandomMovementAttachment(robot)); */
+                if(robot.getRc().getRoundNum() < 1000) {
+                    robot.addAttachment(new RushBuilderAttachment(robot));
+                } else {
+                    robot.addAttachment(new BuilderAttachment(robot));
+                    robot.addAttachment(new RandomMovementAttachment(robot));
+                }
+
                 break;
             case SOLDIER:
                 if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET) {
