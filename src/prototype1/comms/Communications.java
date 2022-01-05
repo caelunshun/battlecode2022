@@ -3,6 +3,7 @@ package prototype1.comms;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +99,15 @@ public final class Communications {
         enc.writeMapLocation(cluster.loc);
         enc.write(cluster.numClaims, 4);
         writeSlot(slot, enc.finish());
+    }
+
+    public SymmetryType getSymmetryType() throws GameActionException {
+        if (rc.readSharedArray(62) == 0) return null;
+        return SymmetryType.values()[rc.readSharedArray(62) - 1];
+    }
+
+    public void setSymmetryType(SymmetryType type) throws GameActionException {
+        rc.writeSharedArray(62, type.ordinal() + 1);
     }
 
     public int getBuildIndex() throws GameActionException {

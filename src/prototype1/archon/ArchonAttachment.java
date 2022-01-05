@@ -1,27 +1,42 @@
 package prototype1.archon;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.generic.SymmetryType;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class ArchonAttachment extends Attachment {
     private int lastBuiltIndex = -1;
 
     public static int SOLDIER_BUILDING_OFFSET = 3;
 
+    private final int numArchons;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
+        numArchons = rc.getArchonCount();
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        if (robot.getComms().getSymmetryType() != null) {
+            rc.setIndicatorString("Symmetry: " + robot.getComms().getSymmetryType());
+        } else {
+            rc.setIndicatorString("Symmetry Unknown");
+        }
         build();
         repair();
+        computeSymmetry();
+
+        if (rc.getRoundNum() == 2) {
+            initialFriendlyArchons.addAll(robot.getFriendlyArchons());
+        }
     }
 
     private void build() throws GameActionException {
@@ -91,6 +106,51 @@ public class ArchonAttachment extends Attachment {
                     rc.repair(robs.getLocation());
                     return;
                 }
+            }
+        }
+    }
+
+    List<MapLocation> initialEnemyArchons = new ArrayList<>();
+    List<MapLocation> initialFriendlyArchons = new ArrayList<>();
+
+    private void computeSymmetry() throws GameActionException {
+        for (MapLocation enemy : robot.getEnemyArchons()) {
+            if (!initialEnemyArchons.contains(enemy)) {
+                initialEnemyArchons.add(enemy);
+            }
+        }
+
+        List<SymmetryType> possibleSymmetry = new ArrayList<>();
+        for (SymmetryType symmetry : SymmetryType.values()) {
+            boolean symmetryWorks = true;
+            List<MapLocation> usedReflections = new ArrayList<>();
+            for (MapLocation enemyLoc : initialEnemyArchons) {
+                boolean works = false;
+                for (MapLocation ourLoc : initialFriendlyArchons) {
+                    if (usedReflections.contains(ourLoc)) continue;
+                    if (symmetry.getSymmetryLocation(ourLoc, rc).equals(enemyLoc)) {
+                        System.out.println(symmetry + ", " + ourLoc + ", E: " + enemyLoc);
+                        works = true;
+                        usedReflections.add(ourLoc);
+                        break;
+                    }
+                }
+                if (!works) symmetryWorks = false;
+            }
+            if (symmetryWorks) {
+                possibleSymmetry.add(symmetry);
+            }
+        }
+
+        if (possibleSymmetry.size() == 1) {
+            robot.getComms().setSymmetryType(possibleSymmetry.get(0));
+        } else if (!possibleSymmetry.isEmpty()) {
+            if (initialEnemyArchons.size() == numArchons) {
+                // Multiple possible symmetry types, but they all work,
+                // as we know the entire map.
+                robot.getComms().setSymmetryType(possibleSymmetry.get(0));
+            } else {
+                rc.setIndicatorString("SU: " + possibleSymmetry);
             }
         }
     }

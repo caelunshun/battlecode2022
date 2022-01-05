@@ -9,22 +9,22 @@ public enum SymmetryType {
         if(this == SymmetryType.HORIZONTAL){
             int xCoordinate = loc.x;
             int yCoordinate = loc.y;
-            yCoordinate = rc.getMapHeight() - yCoordinate;
+            yCoordinate = rc.getMapHeight() - yCoordinate - 1;
             MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
             return enemyToCheck;
         }
         if(this == SymmetryType.VERTICAL){
             int xCoordinate = loc.x;
             int yCoordinate = loc.y;
-            xCoordinate = rc.getMapWidth() - xCoordinate;
+            xCoordinate = rc.getMapWidth() - xCoordinate - 1;
             MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
             return enemyToCheck;
         }
         if(this == SymmetryType.ROTATIONAL){
             int xCoordinate = loc.x;
             int yCoordinate = loc.y;
-            xCoordinate = rc.getMapWidth() - xCoordinate;
-            yCoordinate = rc.getMapHeight() - yCoordinate;
+            xCoordinate = rc.getMapWidth() - xCoordinate - 1;
+            yCoordinate = rc.getMapHeight() - yCoordinate - 1;
             MapLocation enemyToCheck = new MapLocation(xCoordinate, yCoordinate);
             return enemyToCheck;
         }
