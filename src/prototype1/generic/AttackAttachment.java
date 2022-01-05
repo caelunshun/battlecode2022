@@ -2,10 +2,12 @@ package prototype1.generic;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.nav.Navigator;
+import java.util.*;
 
 public class AttackAttachment extends Attachment {
     private Navigator nav;
@@ -39,29 +41,66 @@ public class AttackAttachment extends Attachment {
         if (!rc.isActionReady()) {
             return false;
         }
-        MapLocation[] locations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared);
-        //looks for archons first
-        //canbeoptimized find locations on first loop through
-        for (MapLocation location : locations) {
-            if (rc.canSenseRobotAtLocation(location) && rc.senseRobotAtLocation(location) != null) {
-                if (rc.senseRobotAtLocation(location).getType() == RobotType.ARCHON && rc.senseRobotAtLocation(location).getTeam() != rc.getTeam()) {
-                    if (rc.canAttack(location)) {
-                        rc.attack(location);
-                        return true;
-                    }
+        int bestLocation = 0;
+        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+        ArrayList<RobotType> robotTypes = new ArrayList<RobotType>();
+        for(int i = 0; i < robots.length; i++){
+            if(robots[i].getType() == RobotType.ARCHON){
+                if(rc.canAttack(robots[i].getLocation())){
+                    rc.attack(robots[i].getLocation());
+                    return true;
                 }
+            }
+            if(isFirstBetter(robots[i].getType(), robots[bestLocation].getType())){
+                bestLocation = i;
             }
         }
-        for (MapLocation location : locations) {
-            if (rc.canSenseRobotAtLocation(location) && rc.senseRobotAtLocation(location) != null) {
-                if (rc.senseRobotAtLocation(location).getTeam() != rc.getTeam()) {
-                    if (rc.canAttack(location)) {
-                        rc.attack(location);
-                        return true;
-                    }
-                }
-            }
+        if(rc.canAttack(robots[bestLocation].getLocation())){
+            rc.attack(robots[bestLocation].getLocation());
+            return true;
         }
         return false;
+
+    }
+    public static boolean isFirstBetter(RobotType first, RobotType second){
+        //look at this later order is changing
+        if(first == RobotType.ARCHON){
+            return true;
+        }
+        if(second == RobotType.ARCHON){
+            return false;
+        }
+        if(first == RobotType.SOLDIER){
+            return true;
+        }
+        if(second == RobotType.SOLDIER){
+            return false;
+        }
+        if(first == RobotType.WATCHTOWER){
+            return true;
+        }
+        if(second == RobotType.WATCHTOWER){
+            return false;
+        }
+        if(first == RobotType.SAGE){
+            return true;
+        }
+        if(second == RobotType.SAGE){
+            return false;
+        }
+        if(first == RobotType.MINER){
+            return true;
+        }
+        if(second == RobotType.MINER){
+            return false;
+        }
+        if(first == RobotType.LABORATORY){
+            return true;
+        }
+        if(second == RobotType.LABORATORY){
+            return false;
+        }
+        return true;
+
     }
 }

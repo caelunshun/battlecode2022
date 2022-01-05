@@ -10,6 +10,7 @@ import prototype1.generic.*;
 import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
 import prototype1.soldier.SoldierAttachment;
+import prototype1.watchtower.SageAttachment;
 import prototype1.watchtower.WatchtowerAttachment;
 
 public class RobotBuilder {
@@ -61,6 +62,9 @@ public class RobotBuilder {
                 robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case SAGE:
+                robot.addAttachment(new SageAttachment(robot));
+                robot.addAttachment(new AttackAttachment(robot));
+                robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
         }
     }

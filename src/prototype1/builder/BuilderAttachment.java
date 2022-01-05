@@ -11,6 +11,8 @@ public class BuilderAttachment extends Attachment {
     private final Navigator nav;
     private MapLocation target;
     private Direction targetWhenThere;
+    private MapLocation prototypeToWorkOn;
+    private int prototypeToWorkOnID;
     private boolean needToBuildWatchtower = false;
 
     public BuilderAttachment(Robot robot) {
@@ -58,7 +60,23 @@ public class BuilderAttachment extends Attachment {
                 }
             }
         }
-        healRobots();
+        if(!healRobots() ){
+            MapLocationAndBoolean info = findPrototypes();
+            if(info.getIfThere()) {
+                prototypeToWorkOn = info.getLoc();
+                prototypeToWorkOnID = info.getRobotID();
+            }
+        }
+        if(rc.canSenseRobot(prototypeToWorkOnID)){
+            if(rc.senseRobot(prototypeToWorkOnID).getMode() != RobotMode.PROTOTYPE ){
+                prototypeToWorkOnID = 0;
+                prototypeToWorkOn = null;
+            }
+        } else{
+            prototypeToWorkOnID = 0;
+            prototypeToWorkOn = null;
+        }
+        nav.advanceToward(prototypeToWorkOn);
     }
 
 
@@ -81,13 +99,13 @@ public class BuilderAttachment extends Attachment {
         }
         return null;
     }
-    public void healRobots() throws GameActionException{
+    public boolean healRobots() throws GameActionException{
         RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
         for(int i = robots.length - 1; i >= 0; i--){
             if(robots[i].getMode() == RobotMode.PROTOTYPE && (robots[i].getType() == RobotType.LABORATORY || robots[i].getType() == RobotType.WATCHTOWER)){
                 if(rc.canRepair(robots[i].getLocation())) {
                     rc.repair(robots[i].getLocation());
-                    return;
+                    return true;
                 }
             }
         }
@@ -95,9 +113,19 @@ public class BuilderAttachment extends Attachment {
             if((robots[i].getType() == RobotType.LABORATORY || robots[i].getType() == RobotType.WATCHTOWER)){
                 if(rc.canRepair(robots[i].getLocation())) {
                     rc.repair(robots[i].getLocation());
-                    return;
+                    return false;
                 }
             }
         }
+        return false;
+    }
+    public MapLocationAndBoolean findPrototypes(){
+        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+        for(RobotInfo robot : robots){
+            if(robot.getMode() == RobotMode.PROTOTYPE){
+                return new MapLocationAndBoolean(robot.getLocation(), true, robot.getID());
+            }
+        }
+        return new MapLocationAndBoolean(null, false, 0);
     }
 }
