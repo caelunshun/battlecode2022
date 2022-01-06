@@ -1,8 +1,10 @@
 package prototype1;
 
 import battlecode.common.Direction;
+import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import prototype1.generic.SymmetryType;
 
 import java.util.Collection;
 import java.util.Random;
@@ -123,6 +125,14 @@ public class Util {
     }
     public static MapLocation getCenterLocation(RobotController rc){
         return new MapLocation(rc.getMapHeight() / 2, rc.getMapWidth() / 2);
+    }
+    public static MapLocation getReflectedLocation(RobotController rc, Robot robot) throws GameActionException {
+        robot.getHomeArchon();
+        SymmetryType symm = robot.getComms().getSymmetryType();
+        if( symm == null){
+           return SymmetryType.ROTATIONAL.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
+        }
+        return symm.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
     }
 
 }

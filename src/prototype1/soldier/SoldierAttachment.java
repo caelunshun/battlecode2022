@@ -61,8 +61,7 @@ public class SoldierAttachment extends Attachment {
                 latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
                 rc.setIndicatorString("FOUND GOOD SPOT");
                 if(latticeLocation == null){
-                    nav.advanceToward(Util.getCenterLocation(rc));
-                    rc.setIndicatorString("GOING TO CENTER");
+                    nav.advanceToward(Util.getReflectedLocation(rc, robot));
                 }
             }
         }
@@ -70,8 +69,7 @@ public class SoldierAttachment extends Attachment {
                 latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
             rc.setIndicatorString("FOUND GOOD SPOT");
                 if(latticeLocation == null){
-                    nav.advanceToward(Util.getCenterLocation(rc));
-                    rc.setIndicatorString("GOING TO CENTER");
+                    nav.advanceToward(Util.getReflectedLocation(rc, robot));
                 }
 
             }
