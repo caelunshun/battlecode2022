@@ -80,9 +80,9 @@ public class ArchonAttachment extends Attachment {
             type = RobotType.MINER;
         } else if (rc.getTeamGoldAmount(rc.getTeam()) >= RobotType.SAGE.buildCostGold) {
             type = RobotType.SAGE;
-        } else if (currentBuildIndex % 6 < 1) {
+        } /*else if (currentBuildIndex % 6 < 1) {
             type = RobotType.BUILDER;
-        } else if (currentBuildIndex % 6 < 3) {
+        }*/ else if (currentBuildIndex % 6 < 2) {
             type = RobotType.MINER;
         } else {
             type = RobotType.SOLDIER;
@@ -234,6 +234,11 @@ public class ArchonAttachment extends Attachment {
         }
 
         if (rc.getRoundNum() < 200) {
+            return;
+        }
+
+        if (robot.getComms().getRushingArchon() != null && !robot.getEnemyArchons().contains(robot.getComms().getRushingArchon())) {
+            robot.getComms().setRushingArchon(null);
             return;
         }
 

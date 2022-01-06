@@ -23,10 +23,21 @@ public class SoldierAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        aggravate();
         if (willRush && robot.getComms().getRushingArchon() != null) {
             rush();
         } else {
             moveToLatticePosition();
+        }
+    }
+
+    private void aggravate() throws GameActionException {
+        for (RobotInfo enemy : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
+            if (enemy.location.distanceSquaredTo(rc.getLocation())
+                > rc.getType().actionRadiusSquared) {
+                nav.advanceToward(enemy.location);
+                break;
+            }
         }
     }
 
