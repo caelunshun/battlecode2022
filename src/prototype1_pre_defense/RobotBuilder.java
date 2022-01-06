@@ -1,18 +1,17 @@
-package prototype1;
+package prototype1_pre_defense;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import prototype1.archon.*;
-import prototype1.builder.DefenseBuilderAttachment;
-import prototype1.builder.LabBuilderAttachment;
-import prototype1.builder.RushBuilderAttachment;
-import prototype1.generic.*;
-import prototype1.laboratory.LaboratoryAttachment;
-import prototype1.miner.MinerAttachment;
-import prototype1.soldier.SoldierAttachment;
-import prototype1.watchtower.SageAttachment;
-import prototype1.watchtower.WatchtowerAttachment;
+import prototype1_pre_defense.archon.*;
+import prototype1_pre_defense.builder.BuilderAttachment;
+import prototype1_pre_defense.builder.RushBuilderAttachment;
+import prototype1_pre_defense.generic.*;
+import prototype1_pre_defense.laboratory.LaboratoryAttachment;
+import prototype1_pre_defense.miner.MinerAttachment;
+import prototype1_pre_defense.soldier.SoldierAttachment;
+import prototype1_pre_defense.watchtower.SageAttachment;
+import prototype1_pre_defense.watchtower.WatchtowerAttachment;
 
 public class RobotBuilder {
     private final RobotType type;
@@ -45,13 +44,9 @@ public class RobotBuilder {
                 break;
             case BUILDER:
                 if(robot.getRc().getRoundNum() < 1000) {
-                    if (Util.getRng().nextBoolean()) {
-                        robot.addAttachment(new DefenseBuilderAttachment(robot));
-                    } else {
-                        robot.addAttachment(new RushBuilderAttachment(robot));
-                    }
+                    robot.addAttachment(new RushBuilderAttachment(robot));
                 } else {
-                    robot.addAttachment(new LabBuilderAttachment(robot));
+                    robot.addAttachment(new BuilderAttachment(robot));
                     robot.addAttachment(new RandomMovementAttachment(robot));
                 }
 

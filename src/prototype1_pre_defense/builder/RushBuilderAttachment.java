@@ -1,10 +1,10 @@
-package prototype1.builder;
+package prototype1_pre_defense.builder;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.nav.Navigator;
+import prototype1_pre_defense.Attachment;
+import prototype1_pre_defense.Robot;
+import prototype1_pre_defense.Util;
+import prototype1_pre_defense.nav.Navigator;
 
 /**
  * Attachment for rushing builders - i.e., builders
@@ -23,7 +23,7 @@ public class RushBuilderAttachment extends Attachment {
     public void doTurn() throws GameActionException {
         boolean healedTowers = healWatchtowers();
         if(rc.getRoundNum() == 1500){
-            robot.addAttachment(new LabBuilderAttachment(robot));
+            robot.addAttachment(new BuilderAttachment(robot));
         }
         if(rc.getRoundNum() >= 1500){
             return;

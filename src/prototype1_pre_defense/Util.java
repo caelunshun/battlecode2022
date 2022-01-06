@@ -1,9 +1,7 @@
-package prototype1;
+package prototype1_pre_defense;
 
 import battlecode.common.Direction;
-import battlecode.common.MapLocation;
 
-import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -61,15 +59,5 @@ public class Util {
                 return Direction.CENTER;
         }
         return null;
-    }
-
-    public static MapLocation getClosest(MapLocation center, Collection<MapLocation> locs) {
-        MapLocation closest = null;
-        for (MapLocation loc : locs) {
-            if (closest == null || loc.distanceSquaredTo(center) < closest.distanceSquaredTo(center)) {
-                closest = loc;
-            }
-        }
-        return closest;
     }
 }

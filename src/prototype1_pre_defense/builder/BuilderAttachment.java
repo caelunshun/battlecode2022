@@ -1,10 +1,10 @@
-package prototype1.builder;
+package prototype1_pre_defense.builder;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.nav.Navigator;
+import prototype1_pre_defense.Attachment;
+import prototype1_pre_defense.Robot;
+import prototype1_pre_defense.Util;
+import prototype1_pre_defense.nav.Navigator;
 import java.util.*;
 
 public class BuilderAttachment extends Attachment {
