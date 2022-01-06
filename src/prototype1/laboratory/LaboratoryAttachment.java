@@ -20,7 +20,7 @@ public class LaboratoryAttachment extends Attachment {
     }
     public boolean moreGold() throws GameActionException{
         //Probably change this eventually once we understand more
-        if(rc.getTeamLeadAmount(rc.getTeam()) < 1000){
+        if(rc.getTeamLeadAmount(rc.getTeam()) < 100){
             return false;
         }
         return true;

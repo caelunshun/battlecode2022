@@ -7,6 +7,7 @@ import battlecode.common.RobotType;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.archon.ArchonAttachment;
 import prototype1.nav.Navigator;
 
 import java.util.*;
@@ -25,6 +26,12 @@ public class DefenseBuilderAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        if(rc.getRoundNum() == ArchonAttachment.tiebreakerRound){
+            robot.addAttachment(new LabBuilderAttachment(robot));
+        }
+        if(rc.getRoundNum() >= ArchonAttachment.tiebreakerRound){
+            return;
+        }
         chooseLoyalToArchon();
         if (!healWatchtowers()) {
             if (!buildWatchtowers()) {

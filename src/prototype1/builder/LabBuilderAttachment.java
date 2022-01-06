@@ -4,6 +4,7 @@ import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.archon.ArchonAttachment;
 import prototype1.nav.Navigator;
 import java.util.*;
 
@@ -18,11 +19,14 @@ public class LabBuilderAttachment extends Attachment {
     public LabBuilderAttachment(Robot robot) {
         super(robot);
         nav = new Navigator(robot);
+
     }
 
     @Override
     public void doTurn() throws GameActionException {
+
         if (wantsToBuildLab()) {
+            rc.setIndicatorString("I WANT TO BUILD A LAB");
             //find a better way to choose location of this.
             if(target==null){
                 target = chooseLocation();
@@ -79,6 +83,7 @@ public class LabBuilderAttachment extends Attachment {
         if(prototypeToWorkOn != null) {
             nav.advanceToward(prototypeToWorkOn);
         }
+        rc.setIndicatorString("LAB BUILDER");
     }
 
 

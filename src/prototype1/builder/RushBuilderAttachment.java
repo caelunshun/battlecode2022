@@ -4,6 +4,7 @@ import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.archon.ArchonAttachment;
 import prototype1.nav.Navigator;
 
 /**
@@ -22,10 +23,10 @@ public class RushBuilderAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         boolean healedTowers = healWatchtowers();
-        if(rc.getRoundNum() == 1500){
+        if(rc.getRoundNum() == ArchonAttachment.tiebreakerRound){
             robot.addAttachment(new LabBuilderAttachment(robot));
         }
-        if(rc.getRoundNum() >= 1500){
+        if(rc.getRoundNum() >= ArchonAttachment.tiebreakerRound){
             return;
         }
         if (!robot.getEnemyArchons().contains(targetArchon)) {

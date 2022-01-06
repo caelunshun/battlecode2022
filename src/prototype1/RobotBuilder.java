@@ -44,15 +44,10 @@ public class RobotBuilder {
                 robot.addAttachment(new MinerAttachment(robot));
                 break;
             case BUILDER:
-                if(robot.getRc().getRoundNum() < 1000) {
-                    if (Util.getRng().nextBoolean()) {
+                if(robot.getRc().getRoundNum() < ArchonAttachment.tiebreakerRound) {
                         robot.addAttachment(new DefenseBuilderAttachment(robot));
-                    } else {
-                        robot.addAttachment(new RushBuilderAttachment(robot));
-                    }
                 } else {
                     robot.addAttachment(new LabBuilderAttachment(robot));
-                    robot.addAttachment(new RandomMovementAttachment(robot));
                 }
 
                 break;

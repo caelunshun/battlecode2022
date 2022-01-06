@@ -18,6 +18,8 @@ public class ArchonAttachment extends Attachment {
 
     private boolean isInDanger = false;
 
+    public static final int tiebreakerRound = 1500;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
@@ -26,22 +28,31 @@ public class ArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
-        if(rc.getRoundNum() < 1000) {
-            build();
-        } else{
-            tiebreakerMode();
-        }
-        repair();
-        computeSymmetry();
+        if (rc.getRoundNum() < 1000) {
 
-        if (rc.getRoundNum() == 2) {
-            initialFriendlyArchons.addAll(robot.getFriendlyArchons());
-        }
+            if (robot.getComms().getSymmetryType() != null) {
+                rc.setIndicatorString("Symmetry: " + robot.getComms().getSymmetryType());
+            } else {
+                rc.setIndicatorString("Symmetry Unknown");
+            }
+            if (rc.getRoundNum() < tiebreakerRound) {
+                build();
+            } else {
+                tiebreakerMode();
+            }
+            repair();
+            computeSymmetry();
 
-        if (isInDanger) {
-            rc.setIndicatorString("In Danger");
+            if (rc.getRoundNum() == 2) {
+                initialFriendlyArchons.addAll(robot.getFriendlyArchons());
+            }
+
+            if (isInDanger) {
+                rc.setIndicatorString("In Danger");
+            }
         }
     }
 
