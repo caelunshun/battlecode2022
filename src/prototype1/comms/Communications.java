@@ -22,6 +22,7 @@ import java.util.List;
  * - first 4 slots: the positions of our archons
  * - next 4 slots: the positions of enemy archons
  * - next slot: archon danger statuses
+ * - next slot: the archon getting rushed
  */
 public final class Communications {
     private RobotController rc;
@@ -29,6 +30,7 @@ public final class Communications {
     private static final Range SEGMENT_FRIENDLY_ARCHONS = new Range(0, 4);
     private static final Range SEGMENT_ENEMY_ARCHONS = new Range(4, 8);
     private static final int ARCHON_DANGER = 8;
+    private static final int RUSHING_ARCHON = 9;
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -106,6 +108,22 @@ public final class Communications {
             mask &= ~(1 << archonIndex);
         }
         writeSlot(ARCHON_DANGER, mask);
+    }
+
+    public MapLocation getRushingArchon() throws GameActionException {
+        if (isSlotFree(RUSHING_ARCHON)) return null;
+        BitDecoder dec = new BitDecoder(readSlot(RUSHING_ARCHON));
+        return dec.readMapLocation();
+    }
+
+    public void setRushingArchon(MapLocation loc) throws GameActionException {
+        if (loc == null) {
+            clearSlot(RUSHING_ARCHON);
+        } else {
+            BitEncoder enc = new BitEncoder();
+            enc.writeMapLocation(loc);
+            writeSlot(RUSHING_ARCHON, enc.finish());
+        }
     }
 
     public SymmetryType getSymmetryType() throws GameActionException {

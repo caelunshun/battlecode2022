@@ -28,31 +28,38 @@ public class ArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
-        if (rc.getRoundNum() < 1000) {
+        if (robot.getComms().getSymmetryType() != null) {
+            rc.setIndicatorString("Symmetry: " + robot.getComms().getSymmetryType());
+        } else {
+            rc.setIndicatorString("Symmetry Unknown");
+        }
+        if (rc.getRoundNum() < tiebreakerRound) {
+            build();
+        } else {
+            tiebreakerMode();
+        }
+        repair();
+        computeSymmetry();
 
-            if (robot.getComms().getSymmetryType() != null) {
-                rc.setIndicatorString("Symmetry: " + robot.getComms().getSymmetryType());
-            } else {
-                rc.setIndicatorString("Symmetry Unknown");
-            }
-            if (rc.getRoundNum() < tiebreakerRound) {
-                build();
-            } else {
-                tiebreakerMode();
-            }
-            repair();
-            computeSymmetry();
+        if (rc.getRoundNum() == 2) {
+            initialFriendlyArchons.addAll(robot.getFriendlyArchons());
+        }
 
-            if (rc.getRoundNum() == 2) {
-                initialFriendlyArchons.addAll(robot.getFriendlyArchons());
-            }
+        if (isInDanger) {
+            rc.setIndicatorString("In Danger");
+        }
+        if (rc.getRoundNum() == 2) {
+            initialFriendlyArchons.addAll(robot.getFriendlyArchons());
+        }
+        initiateRush();
 
-            if (isInDanger) {
-                rc.setIndicatorString("In Danger");
-            }
+        if (robot.getComms().getRushingArchon() != null) {
+            rc.setIndicatorString("Rushing " + robot.getComms().getRushingArchon());
+        }
+        if (isInDanger) {
+            rc.setIndicatorString("In Danger");
         }
     }
 
@@ -64,7 +71,7 @@ public class ArchonAttachment extends Attachment {
 
         RobotType type;
         if (isInDanger) {
-              type = RobotType.SOLDIER;
+            type = RobotType.SOLDIER;
         } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET - 1) {
             type = RobotType.MINER;
         } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET + 2) {
@@ -84,8 +91,8 @@ public class ArchonAttachment extends Attachment {
         rc.setIndicatorString("Build #" + currentBuildIndex);
 
         if (rc.getTeamLeadAmount(rc.getTeam()) < 200
-            && rc.getRoundNum() > 60
-            && !isInDanger) {
+                && rc.getRoundNum() > 60
+                && !isInDanger) {
             return;
         }
 
@@ -115,14 +122,14 @@ public class ArchonAttachment extends Attachment {
         return Direction.CENTER;
     }
 
-    private void repair() throws GameActionException{
-        if(!rc.isActionReady()){
+    private void repair() throws GameActionException {
+        if (!rc.isActionReady()) {
             return;
         }
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
-        for(RobotInfo robs :nearbyRobots){
-            if(robs.getHealth() < robs.getType().health){
-                if(rc.canRepair(robs.getLocation())){
+        for (RobotInfo robs : nearbyRobots) {
+            if (robs.getHealth() < robs.getType().health) {
+                if (rc.canRepair(robs.getLocation())) {
                     rc.repair(robs.getLocation());
                     return;
                 }
@@ -193,9 +200,9 @@ public class ArchonAttachment extends Attachment {
         }
     }
 
-    private void tiebreakerMode() throws GameActionException{
-        if(rc.getRoundNum() % 50 == 0 && rc.getTeamGoldAmount(rc.getTeam()) > 2000){
-            if(rc.canBuildRobot(RobotType.BUILDER, getAvailableBuildDirection())){
+    private void tiebreakerMode() throws GameActionException {
+        if (rc.getRoundNum() % 50 == 0 && rc.getTeamGoldAmount(rc.getTeam()) > 2000) {
+            if (rc.canBuildRobot(RobotType.BUILDER, getAvailableBuildDirection())) {
                 rc.buildRobot(RobotType.BUILDER, getAvailableBuildDirection());
             }
         }
@@ -218,5 +225,22 @@ public class ArchonAttachment extends Attachment {
         }
 
         return enemyHealth > ourHealth;
+    }
+
+    private void initiateRush() throws GameActionException {
+        if (isInDanger) {
+            robot.getComms().setRushingArchon(null);
+            return;
+        }
+
+        if (rc.getRoundNum() < 200) {
+            return;
+        }
+
+        if (robot.getComms().getRushingArchon() != null) return;
+
+        if (robot.getEnemyArchons().isEmpty()) return;
+
+        robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
     }
 }

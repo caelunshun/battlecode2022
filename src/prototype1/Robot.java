@@ -101,6 +101,13 @@ public final class Robot {
         return archonsInDanger.get(i);
     }
 
+    public boolean isAnyArchonInDanger() {
+        for (MapLocation arch : friendlyArchons) {
+            if (isArchonInDanger(arch)) return true;
+        }
+        return false;
+    }
+
     public RobotInfo getHomeArchon(){
         return homeArchon;
     }
