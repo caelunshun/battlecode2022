@@ -30,6 +30,11 @@ public final class Navigator {
                 bestDir = dir;
                 bestScore = score;
             }
+
+            if (robot.getRc().canMove(dir) && target.equals(location)) {
+                bestDir = dir;
+                break;
+            }
         }
 
         if (bestDir != null) {

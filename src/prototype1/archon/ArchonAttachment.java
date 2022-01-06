@@ -4,6 +4,8 @@ import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.build.BuildType;
+import prototype1.build.BuildWeightTable;
 import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ public class ArchonAttachment extends Attachment {
 
     public static final int tiebreakerRound = 1500;
 
+    private BuildWeightTable buildWeights = new BuildWeightTable();
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
@@ -35,6 +39,8 @@ public class ArchonAttachment extends Attachment {
         } else {
             rc.setIndicatorString("Symmetry Unknown");
         }
+
+        incrementBuildWeights();;
         if (rc.getRoundNum() < tiebreakerRound) {
             build();
         } else {
@@ -47,9 +53,6 @@ public class ArchonAttachment extends Attachment {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
         }
 
-        if (isInDanger) {
-            rc.setIndicatorString("In Danger");
-        }
         if (rc.getRoundNum() == 2) {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
         }
@@ -63,43 +66,48 @@ public class ArchonAttachment extends Attachment {
         }
     }
 
+    private void incrementBuildWeights() throws GameActionException {
+        // Increment the weights in the build table based on priorities.
+        if (rc.getRoundNum() < 200) {
+            buildWeights.addWeight(BuildType.MINER, 40);
+        } else {
+            buildWeights.addWeight(BuildType.MINER, 10);
+        }
+
+        if (robot.isAnyArchonInDanger()) {
+            buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 100);
+        } else {
+            buildWeights.addWeight(BuildType.SOLDIER, 30);
+        }
+
+        if (rc.getRoundNum() < 200) {
+            buildWeights.addWeight(BuildType.BUILDER, 5);
+        }
+
+        if (rc.getRoundNum() > tiebreakerRound) {
+            buildWeights.addWeight(BuildType.BUILDER, 20);
+        }
+    }
+
     private void build() throws GameActionException {
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1 && !isInDanger) {
             return;
         }
 
-        RobotType type;
-        if (isInDanger) {
-            type = RobotType.SOLDIER;
-        } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET - 1) {
-            type = RobotType.MINER;
-        } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET + 2) {
-            type = RobotType.SOLDIER;
-        } else if (currentBuildIndex < 6) {
-            type = RobotType.MINER;
-        } else if (rc.getTeamGoldAmount(rc.getTeam()) >= RobotType.SAGE.buildCostGold) {
-            type = RobotType.SAGE;
-        } /*else if (currentBuildIndex % 6 < 1) {
-            type = RobotType.BUILDER;
-        }*/ else if (currentBuildIndex % 6 < 2) {
-            type = RobotType.MINER;
-        } else {
-            type = RobotType.SOLDIER;
-        }
+        BuildType buildType = buildWeights.getHighestWeight();
 
-        rc.setIndicatorString("Build #" + currentBuildIndex);
+        rc.setIndicatorString(buildType.toString());
 
-        if (rc.getTeamLeadAmount(rc.getTeam()) < 200
-                && rc.getRoundNum() > 60
-                && !isInDanger) {
+        if (buildType == BuildType.DEFENSE_SOLDIER && !isInDanger && robot.isAnyArchonInDanger()) {
             return;
         }
 
-        if (tryBuild(type)) {
+        if (tryBuild(buildType.getRobotType())) {
             ++currentBuildIndex;
             robot.getComms().setBuildIndex(currentBuildIndex);
             lastBuiltIndex = currentBuildIndex;
+            buildWeights.clearWeight(buildType);
         }
     }
 

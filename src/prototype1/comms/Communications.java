@@ -3,6 +3,7 @@ package prototype1.comms;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import prototype1.build.BuildWeightTable;
 import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public final class Communications {
     private static final Range SEGMENT_ENEMY_ARCHONS = new Range(4, 8);
     private static final int ARCHON_DANGER = 8;
     private static final int RUSHING_ARCHON = 9;
+    private static final Range SEGMENT_BUILD_WEIGHTS = new Range(10, 17);
 
     public Communications(RobotController rc) {
         this.rc = rc;
