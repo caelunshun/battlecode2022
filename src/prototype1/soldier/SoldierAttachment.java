@@ -17,5 +17,7 @@ public class SoldierAttachment extends Attachment {
     public void doTurn() throws GameActionException {
 
     }
+public void moveInRing() throws GameActionException {
 
+}
 }

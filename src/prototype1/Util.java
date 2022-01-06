@@ -63,6 +63,7 @@ public class Util {
         return null;
     }
 
+
     public static MapLocation getClosest(MapLocation center, Collection<MapLocation> locs) {
         MapLocation closest = null;
         for (MapLocation loc : locs) {
@@ -71,5 +72,11 @@ public class Util {
             }
         }
         return closest;
+    }
+    public static boolean isClockwise(Direction dir){
+        if(dir == Direction.NORTH || dir == Direction.NORTHEAST || dir == Direction.EAST){
+            return true;
+        }
+        return false;
     }
 }
