@@ -39,7 +39,7 @@ public MapLocation findLatticePosition(int sizeOfSearch) throws GameActionExcept
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(robot.getHomeArchon().getLocation(),sizeOfSearch);
         for(MapLocation loc : locs){
             if((loc.x % 2) != (loc.y % 2)){
-                if(!rc.canSenseRobotAtLocation(loc)){
+                if(!rc.canSenseRobotAtLocation(loc) && robot.getHomeArchon().getLocation().distanceSquaredTo(loc) >= 5){
                    return loc;
                 }
             }
