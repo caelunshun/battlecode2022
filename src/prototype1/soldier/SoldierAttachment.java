@@ -6,19 +6,28 @@ import prototype1.Robot;
 import prototype1.Util;
 import prototype1.nav.Navigator;
 
+import java.util.Random;
+
 public class SoldierAttachment extends Attachment {
     private final Navigator nav;
     private int waitingTime = 0;
     private MapLocation latticeLocation;
+    private final boolean willRush;
 
     public SoldierAttachment(Robot robot) {
         super(robot);
         nav = new Navigator(robot);
+
+        willRush = new Random(rc.getID()).nextFloat() < 0.7;
     }
 
     @Override
     public void doTurn() throws GameActionException {
-        moveToLatticePosition();
+        if (willRush && robot.getComms().getRushingArchon() != null) {
+            rush();
+        } else {
+            moveToLatticePosition();
+        }
     }
 
     public void moveToLatticePosition() throws GameActionException {
@@ -50,4 +59,8 @@ public class SoldierAttachment extends Attachment {
         return null;
     }
 
+    private void rush() throws GameActionException {
+        MapLocation target = robot.getComms().getRushingArchon();
+        nav.advanceToward(target);
+    }
 }

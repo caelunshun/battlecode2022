@@ -1,9 +1,6 @@
 package prototype1.builder;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
