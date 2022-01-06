@@ -18,8 +18,7 @@ public class SoldierAttachment extends Attachment {
         super(robot);
         nav = new Navigator(robot);
 
-      //  willRush = new Random(rc.getID()).nextFloat() < 0.7;
-        willRush = false;
+       willRush = new Random(rc.getID()).nextFloat() < 0.7;
     }
 
     @Override
