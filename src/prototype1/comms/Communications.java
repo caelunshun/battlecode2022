@@ -92,6 +92,17 @@ public final class Communications {
         }
     }
 
+    public void removeFriendlyArchon(MapLocation loc) throws GameActionException {
+        for (int i = SEGMENT_FRIENDLY_ARCHONS.start; i < SEGMENT_FRIENDLY_ARCHONS.end; i++) {
+            if (!isSlotFree(i)) {
+                BitDecoder dec = new BitDecoder(readSlot(i));
+                if (dec.readMapLocation().equals(loc)) {
+                    clearSlot(i);
+                }
+            }
+        }
+    }
+
     public void addLeadCluster(LeadCluster cluster) throws GameActionException {
         int slot = getFreeSlot(SEGMENT_LEAD_CLUSTERS);
         if (slot == -1) return;

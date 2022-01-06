@@ -34,7 +34,7 @@ public class ArchonSpotterAttachment extends Attachment {
             if (rc.canSenseLocation(loc)) {
                 RobotInfo rob = rc.senseRobotAtLocation(loc);
                 if (rob == null || rob.type != RobotType.ARCHON) {
-                    robot.getComms().readFriendlyArchons(loc);
+                    robot.getComms().removeFriendlyArchon(loc);
                 }
             }
         }
