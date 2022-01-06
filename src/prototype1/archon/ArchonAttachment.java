@@ -7,7 +7,6 @@ import prototype1.Util;
 import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class ArchonAttachment extends Attachment {
@@ -17,6 +16,8 @@ public class ArchonAttachment extends Attachment {
 
     private final int numArchons;
 
+    private boolean isInDanger = false;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
@@ -25,11 +26,8 @@ public class ArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        if (robot.getComms().getSymmetryType() != null) {
-            rc.setIndicatorString("Symmetry: " + robot.getComms().getSymmetryType());
-        } else {
-            rc.setIndicatorString("Symmetry Unknown");
-        }
+        isInDanger = isInDanger();
+        robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
         if(rc.getRoundNum() < 1000) {
             build();
         } else{
@@ -41,16 +39,22 @@ public class ArchonAttachment extends Attachment {
         if (rc.getRoundNum() == 2) {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
         }
+
+        if (isInDanger) {
+            rc.setIndicatorString("In Danger");
+        }
     }
 
     private void build() throws GameActionException {
         int currentBuildIndex = robot.getComms().getBuildIndex();
-        if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1) {
+        if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1 && !isInDanger) {
             return;
         }
 
         RobotType type;
-        if (currentBuildIndex < SOLDIER_BUILDING_OFFSET - 1) {
+        if (isInDanger) {
+              type = RobotType.SOLDIER;
+        } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET - 1) {
             type = RobotType.MINER;
         } else if (currentBuildIndex < SOLDIER_BUILDING_OFFSET + 2) {
             type = RobotType.SOLDIER;
@@ -58,9 +62,9 @@ public class ArchonAttachment extends Attachment {
             type = RobotType.MINER;
         } else if (rc.getTeamGoldAmount(rc.getTeam()) >= RobotType.SAGE.buildCostGold) {
             type = RobotType.SAGE;
-        } else if (currentBuildIndex % 6 < 2) {
+        } else if (currentBuildIndex % 6 < 1) {
             type = RobotType.BUILDER;
-        } else if (currentBuildIndex % 6 < 4) {
+        } else if (currentBuildIndex % 6 < 3) {
             type = RobotType.MINER;
         } else {
             type = RobotType.SOLDIER;
@@ -69,7 +73,8 @@ public class ArchonAttachment extends Attachment {
         rc.setIndicatorString("Build #" + currentBuildIndex);
 
         if (rc.getTeamLeadAmount(rc.getTeam()) < 200
-            && rc.getRoundNum() > 60) {
+            && rc.getRoundNum() > 60
+            && !isInDanger) {
             return;
         }
 
@@ -176,11 +181,31 @@ public class ArchonAttachment extends Attachment {
             }
         }
     }
+
     private void tiebreakerMode() throws GameActionException{
         if(rc.getRoundNum() % 50 == 0 && rc.getTeamGoldAmount(rc.getTeam()) > 2000){
             if(rc.canBuildRobot(RobotType.BUILDER, getAvailableBuildDirection())){
-                rc.buildRobot(RobotType.BUILDER, getAvailableBuildDirection() );
+                rc.buildRobot(RobotType.BUILDER, getAvailableBuildDirection());
             }
         }
+    }
+
+    private boolean isInDanger() throws GameActionException {
+        // Check if the total health of nearby enemy robots (that can attack)
+        // is greater than the total health of our nearby robots (that can attack).
+        int ourHealth = 0;
+        int enemyHealth = 0;
+        for (RobotInfo info : rc.senseNearbyRobots()) {
+            if (info.ID == rc.getID()) continue;
+            if (info.type.canAttack()) {
+                if (info.team == rc.getTeam()) {
+                    ourHealth += info.health;
+                } else {
+                    enemyHealth += info.health;
+                }
+            }
+        }
+
+        return enemyHealth > ourHealth;
     }
 }

@@ -21,14 +21,14 @@ import java.util.List;
  * The meaning of a slot depends on its position in the array:
  * - first 4 slots: the positions of our archons
  * - next 4 slots: the positions of enemy archons
- * - next 8 slots: positions of known lead clusters and whether they've been claimed.
+ * - next slot: archon danger statuses
  */
 public final class Communications {
     private RobotController rc;
 
     private static final Range SEGMENT_FRIENDLY_ARCHONS = new Range(0, 4);
     private static final Range SEGMENT_ENEMY_ARCHONS = new Range(4, 8);
-    private static final Range SEGMENT_LEAD_CLUSTERS = new Range(8, 16);
+    private static final int ARCHON_DANGER = 8;
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -51,17 +51,6 @@ public final class Communications {
             if (!isSlotFree(i)) {
                 BitDecoder dec = new BitDecoder(readSlot(i));
                 res.add(dec.readMapLocation());
-            }
-        }
-        return res;
-    }
-
-    public List<LeadCluster> readLeadClusters() throws GameActionException {
-        List<LeadCluster> res = new ArrayList<>(4);
-        for (int i = SEGMENT_LEAD_CLUSTERS.start; i < SEGMENT_LEAD_CLUSTERS.end; i++) {
-            if (!isSlotFree(i)) {
-                BitDecoder dec = new BitDecoder(readSlot(i));
-                res.add(new LeadCluster(dec.readMapLocation(), dec.read(4)));
             }
         }
         return res;
@@ -103,13 +92,20 @@ public final class Communications {
         }
     }
 
-    public void addLeadCluster(LeadCluster cluster) throws GameActionException {
-        int slot = getFreeSlot(SEGMENT_LEAD_CLUSTERS);
-        if (slot == -1) return;
-        BitEncoder enc = new BitEncoder();
-        enc.writeMapLocation(cluster.loc);
-        enc.write(cluster.numClaims, 4);
-        writeSlot(slot, enc.finish());
+    public boolean isArchonInDanger(int archonIndex) throws GameActionException {
+        int mask = readSlot(ARCHON_DANGER);
+        return ((mask >>> archonIndex) & 1) == 1;
+    }
+
+    public void setArchonInDanger(int archonIndex, boolean inDanger) throws GameActionException {
+        int mask = readSlot(ARCHON_DANGER);
+        if (isSlotFree(ARCHON_DANGER)) mask = 0;
+        if (inDanger) {
+            mask |= 1 << archonIndex;
+        } else {
+            mask &= ~(1 << archonIndex);
+        }
+        writeSlot(ARCHON_DANGER, mask);
     }
 
     public SymmetryType getSymmetryType() throws GameActionException {

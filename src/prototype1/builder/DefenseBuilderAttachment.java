@@ -9,8 +9,7 @@ import prototype1.Robot;
 import prototype1.Util;
 import prototype1.nav.Navigator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DefenseBuilderAttachment extends Attachment {
     private MapLocation loyalToArchon;
@@ -22,11 +21,23 @@ public class DefenseBuilderAttachment extends Attachment {
         this.nav = new Navigator(robot);
     }
 
+    int age = 0;
+
     @Override
     public void doTurn() throws GameActionException {
         chooseLoyalToArchon();
         if (!healWatchtowers()) {
-            buildWatchtowers();
+            if (!buildWatchtowers()) {
+                sacrificeForTheGreaterGood();
+                rc.setIndicatorString("Giving Up");
+            }
+        } else {
+            rc.setIndicatorString("Healed");
+        }
+
+        ++age;
+        if (age > 100) {
+            sacrificeForTheGreaterGood();
         }
     }
 
@@ -43,11 +54,14 @@ public class DefenseBuilderAttachment extends Attachment {
         return false;
     }
 
-    private void buildWatchtowers() throws GameActionException {
+    private boolean buildWatchtowers() throws GameActionException {
         for (MapLocation candidate : watchtowerPositions) {
             if (rc.getLocation().isAdjacentTo(candidate)
-                && rc.canBuildRobot(RobotType.WATCHTOWER, rc.getLocation().directionTo(candidate))) {
+                && rc.canBuildRobot(RobotType.WATCHTOWER, rc.getLocation().directionTo(candidate))
+                && new Random(robot.getComms().getBuildIndex()).nextFloat() < 0.3) {
                 rc.buildRobot(RobotType.WATCHTOWER, rc.getLocation().directionTo(candidate));
+                rc.setIndicatorString("Built");
+                return true;
             }
         }
 
@@ -55,13 +69,17 @@ public class DefenseBuilderAttachment extends Attachment {
             MapLocation target = watchtowerPositions.get(0);
             if (rc.canSenseRobotAtLocation(target) && rc.senseRobotAtLocation(target) != null) {
                 watchtowerPositions.remove(0);
+                continue;
             }
 
             if (!rc.getLocation().isAdjacentTo(target)) {
                 nav.advanceToward(target);
-                break;
+                rc.setIndicatorString("Advancing");
             }
+            return true;
         }
+
+        return false;
     }
 
     private void chooseLoyalToArchon() {
@@ -74,17 +92,22 @@ public class DefenseBuilderAttachment extends Attachment {
 
     private void chooseWatchtowerPositions() {
         watchtowerPositions = new ArrayList<>(12);
-        for (int dx = -1; dx <= 1; dx++) {
-            if (dx == 0) continue;
-            for (int dy = -1; dy <= 1; dy++) {
-                if (dy == 0) continue;
-
-                MapLocation initial = loyalToArchon.translate(dx * 3, dy * 3);
-                while (!initial.equals(loyalToArchon)) {
-                    watchtowerPositions.add(initial);
-                    initial = initial.add(initial.directionTo(loyalToArchon));
+        for (int ring = 0; ring < 4; ring++) {
+            int[] deltas = {-1, 1};
+            for (int dx : deltas) {
+                for (int dy : deltas) {
+                    MapLocation loc = loyalToArchon.translate(dx * (ring + 1), dy * (ring + 1));
+                    if (Util.isOnTheMap(loc, rc)) {
+                        watchtowerPositions.add(loc);
+                    }
                 }
             }
+        }
+    }
+
+    private void sacrificeForTheGreaterGood() throws GameActionException {
+        if (rc.senseLead(rc.getLocation()) == 0) {
+            rc.disintegrate(); // RIP
         }
     }
 }

@@ -2,7 +2,6 @@ package prototype1;
 
 import battlecode.common.*;
 import prototype1.comms.Communications;
-import prototype1.comms.LeadCluster;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,8 @@ public final class Robot {
 
     private List<MapLocation> friendlyArchons;
     private List<MapLocation> enemyArchons;
-    private List<LeadCluster> leadClusters;
+    private List<Boolean> archonsInDanger = new ArrayList<>();
+
     private RobotInfo homeArchon;
 
     public Robot(RobotController rc) throws GameActionException {
@@ -63,7 +63,10 @@ public final class Robot {
     public void update() throws GameActionException {
         friendlyArchons = comms.readFriendlyArchons();
         enemyArchons = comms.readEnemyArchons();
-        leadClusters = comms.readLeadClusters();
+        archonsInDanger.clear();
+        for (int i = 0; i < friendlyArchons.size(); i++) {
+            archonsInDanger.add(comms.isArchonInDanger(i));
+        }
     }
 
     private void doTurn() throws GameActionException {
@@ -93,20 +96,13 @@ public final class Robot {
         return enemyArchons;
     }
 
-    public List<LeadCluster> getLeadClusters() {
-        return leadClusters;
-    }
-    public RobotInfo getHomeArchon(){
-        return homeArchon;
+    public boolean isArchonInDanger(MapLocation archon) {
+        int i = friendlyArchons.indexOf(archon);
+        return archonsInDanger.get(i);
     }
 
-    public boolean isLocationInLeadCluster(MapLocation loc) {
-        for (LeadCluster c : leadClusters) {
-            if (c.loc.distanceSquaredTo(loc) < 20) {
-                return true;
-            }
-        }
-        return false;
+    public RobotInfo getHomeArchon(){
+        return homeArchon;
     }
 
     public Communications getComms() {

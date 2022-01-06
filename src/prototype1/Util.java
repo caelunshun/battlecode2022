@@ -2,6 +2,7 @@ package prototype1;
 
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
 
 import java.util.Collection;
 import java.util.Random;
@@ -73,10 +74,17 @@ public class Util {
         }
         return closest;
     }
-    public static boolean isClockwise(Direction dir){
-        if(dir == Direction.NORTH || dir == Direction.NORTHEAST || dir == Direction.EAST){
+
+    public static boolean isClockwise(Direction dir) {
+        if (dir == Direction.NORTH || dir == Direction.NORTHEAST || dir == Direction.EAST) {
             return true;
         }
         return false;
+    }
+
+    public static boolean isOnTheMap(MapLocation loc, RobotController rc) {
+        return loc.x >= 0 && loc.y >= 0
+                && loc.x < rc.getMapWidth()
+                && loc.y < rc.getMapHeight();
     }
 }
