@@ -87,4 +87,39 @@ public class Util {
                 && loc.x < rc.getMapWidth()
                 && loc.y < rc.getMapHeight();
     }
+    public static Direction bestPossibleDirection(Direction dir, RobotController rc){
+        double min = 9.0;
+        Direction best = Direction.CENTER;
+        for(int i = 0; i < DIRECTIONS.length; i++){
+            double a = getAngle(dir, DIRECTIONS[i]);
+                if(a < min && rc.canMove(DIRECTIONS[i])){
+                    min = a;
+                    best = DIRECTIONS[i];
+                }
+            }
+        return best;
+    }
+    public static double getAngle(Direction first, Direction second){
+       return cmpAngles(Math.atan2(first.dy, first.dx), Math.atan2(second.dy, second.dx));
+    }
+    private static double cmpAngles(double a, double b) {
+        a = normalizeAngle(a);
+        b = normalizeAngle(b);
+
+        if (b - a > Math.PI) {
+            return (b - a) - Math.PI*2;
+        } else if (b - a < -Math.PI) {
+            return (b - a) + Math.PI*2;
+        } else {
+            return b - a;
+        }
+    }
+    private static double normalizeAngle(double theta) {
+        if (theta < 0) {
+            theta = Math.PI * 2 + theta;
+        }
+        theta %= Math.PI * 2;
+        return theta;
+    }
+
 }
