@@ -68,7 +68,7 @@ public class RobotBuilder {
                 }
                 robot.addAttachment(new SoldierAttachment(robot));
                 robot.addAttachment(new AttackAttachment(robot));
-                robot.addAttachment(new RandomMovementAttachment(robot));
+               // robot.addAttachment(new RandomMovementAttachment(robot));
                 break;
             case SAGE:
                 robot.addAttachment(new SageAttachment(robot));

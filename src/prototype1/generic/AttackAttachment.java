@@ -19,7 +19,7 @@ public class AttackAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        advanceTowardEnemyArchon();
+       // advanceTowardEnemyArchon();
         lookForEnemy();
     }
 
