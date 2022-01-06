@@ -121,5 +121,8 @@ public class Util {
         theta %= Math.PI * 2;
         return theta;
     }
+    public static MapLocation getCenterLocation(RobotController rc){
+        return new MapLocation(rc.getMapHeight() / 2, rc.getMapWidth() / 2);
+    }
 
 }

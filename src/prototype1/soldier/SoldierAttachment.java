@@ -51,22 +51,36 @@ public class SoldierAttachment extends Attachment {
         if (latticeLocation != null && !rc.canSenseRobotAtLocation(latticeLocation)) {
             nav.advanceToward(latticeLocation);
             waitingTime = 0;
-        } else {
-            latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
-            if(latticeLocation == null){
-                Direction bestDirection   = Util.bestPossibleDirection(robot.getHomeArchon().getLocation().directionTo(rc.getLocation()), rc);
-                if(rc.canMove(bestDirection)) {
-                    rc.move(bestDirection);
-                    rc.setIndicatorString("MOVING TO" + bestDirection);
+            rc.setIndicatorString("MOVING TO LATTICE LOCATION" + latticeLocation);
+            return;
+        } else if(latticeLocation != null && rc.canSenseRobotAtLocation(latticeLocation)) {
+            if(rc.senseRobotAtLocation(latticeLocation).getType() == RobotType.MINER){
+                nav.advanceToward(latticeLocation);
+                rc.setIndicatorString("MOVING TO LL EVEN WITH UNIT");
+            } else{
+                latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
+                rc.setIndicatorString("FOUND GOOD SPOT");
+                if(latticeLocation == null){
+                    nav.advanceToward(Util.getCenterLocation(rc));
+                    rc.setIndicatorString("GOING TO CENTER");
                 }
             }
+        }
+        else {
+                latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
+            rc.setIndicatorString("FOUND GOOD SPOT");
+                if(latticeLocation == null){
+                    nav.advanceToward(Util.getCenterLocation(rc));
+                    rc.setIndicatorString("GOING TO CENTER");
+                }
 
+            }
         }
 
-    }
+
 
     public MapLocation findLatticePosition(int sizeOfSearch) throws GameActionException {
-        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(robot.getHomeArchon().getLocation(), sizeOfSearch);
+        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(robot.getRc().getLocation(), sizeOfSearch);
         for (MapLocation loc : locs) {
             if ((loc.x % 2) != (loc.y % 2)) {
                 if (!rc.canSenseRobotAtLocation(loc) && robot.getHomeArchon().getLocation().distanceSquaredTo(loc) >= 5) {
