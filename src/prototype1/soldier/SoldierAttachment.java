@@ -18,7 +18,8 @@ public class SoldierAttachment extends Attachment {
         super(robot);
         nav = new Navigator(robot);
 
-        willRush = new Random(rc.getID()).nextFloat() < 0.7;
+      //  willRush = new Random(rc.getID()).nextFloat() < 0.7;
+        willRush = false;
     }
 
     @Override
@@ -51,9 +52,15 @@ public class SoldierAttachment extends Attachment {
             nav.advanceToward(latticeLocation);
             waitingTime = 0;
         } else {
-            latticeLocation = findLatticePosition(waitingTime + 100);
-            waitingTime += 20;
-            rc.setIndicatorString("LOOKING FOR LATTICE LOCATION");
+            latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
+            if(latticeLocation == null){
+                Direction bestDirection   = Util.bestPossibleDirection(robot.getHomeArchon().getLocation().directionTo(rc.getLocation()), rc);
+                if(rc.canMove(bestDirection)) {
+                    rc.move(bestDirection);
+                    rc.setIndicatorString("MOVING TO" + bestDirection);
+                }
+            }
+
         }
 
     }
