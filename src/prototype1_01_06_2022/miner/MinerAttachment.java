@@ -1,11 +1,11 @@
-package prototype1.miner;
+package prototype1_01_06_2022.miner;
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.nav.Navigator;
+import prototype1_01_06_2022.Attachment;
+import prototype1_01_06_2022.Robot;
+import prototype1_01_06_2022.nav.Navigator;
 
 import java.util.ArrayList;
 import java.util.List;

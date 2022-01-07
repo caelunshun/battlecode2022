@@ -1,7 +1,7 @@
-package prototype1;
+package prototype1_01_06_2022;
 
 import battlecode.common.*;
-import prototype1.comms.Communications;
+import prototype1_01_06_2022.comms.Communications;
 
 import java.util.ArrayList;
 import java.util.List;

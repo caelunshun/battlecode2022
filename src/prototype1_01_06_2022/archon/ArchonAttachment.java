@@ -1,12 +1,12 @@
-package prototype1.archon;
+package prototype1_01_06_2022.archon;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.build.BuildType;
-import prototype1.build.BuildWeightTable;
-import prototype1.generic.SymmetryType;
+import prototype1_01_06_2022.Attachment;
+import prototype1_01_06_2022.Robot;
+import prototype1_01_06_2022.Util;
+import prototype1_01_06_2022.build.BuildType;
+import prototype1_01_06_2022.build.BuildWeightTable;
+import prototype1_01_06_2022.generic.SymmetryType;
 
 import java.util.ArrayList;
 import java.util.List;
