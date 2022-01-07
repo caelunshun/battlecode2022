@@ -13,23 +13,35 @@ public class SoldierAttachment extends Attachment {
     private int waitingTime = 0;
     private MapLocation latticeLocation;
     private final boolean willRush;
+    private final boolean willDefendOtherArchon;
+    private MapLocation rushingArchon;
 
     public SoldierAttachment(Robot robot) {
         super(robot);
         nav = new Navigator(robot);
 
-       willRush = new Random(rc.getID()).nextFloat() < 0.7;
+        Random random = new Random(rc.getID());
+        willRush = random.nextFloat() < 0.7;
+        willDefendOtherArchon = random.nextFloat() < 0.5;
     }
 
     @Override
     public void doTurn() throws GameActionException {
         aggravate();
-        if (willRush && robot.getComms().getRushingArchon() != null) {
+        if (rushingArchon == null) {
+            rushingArchon = robot.getComms().getRushingArchon();
+        } else if (!robot.getEnemyArchons().contains(rushingArchon)) {
+            rushingArchon = null;
+        }
+        if (willRush && rushingArchon != null) {
             rush();
+        } else if (willDefendOtherArchon && robot.isAnyArchonInDanger()) {
+            defendOtherArchon();
         } else {
             moveToLatticePosition();
         }
     }
+
 
     private void aggravate() throws GameActionException {
         for (RobotInfo enemy : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
@@ -89,7 +101,22 @@ public class SoldierAttachment extends Attachment {
     }
 
     private void rush() throws GameActionException {
-        MapLocation target = robot.getComms().getRushingArchon();
-        nav.advanceToward(target);
+        nav.advanceToward(rushingArchon);
+    }
+
+    private void defendOtherArchon() throws GameActionException {
+        MapLocation target = null;
+        for (MapLocation loc : robot.getFriendlyArchons()) {
+            if (robot.isArchonInDanger(loc)) {
+                if (target == null || rc.getLocation().distanceSquaredTo(loc)
+                    < rc.getLocation().distanceSquaredTo(target)) {
+                    target = loc;
+                }
+            }
+        }
+
+        if (target != null) {
+            nav.advanceToward(target);
+        }
     }
 }
