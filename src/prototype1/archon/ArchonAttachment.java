@@ -21,16 +21,21 @@ public class ArchonAttachment extends Attachment {
 
     private boolean isInDanger = false;
 
-    public static final int tiebreakerRound = 1500;
+    public static final int tiebreakerRound = 1850;
 
     private BuildWeightTable buildWeights = new BuildWeightTable();
 
     private boolean isLead;
 
+    private boolean isMapTestSmall;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
         numArchons = rc.getArchonCount();
+
+        isMapTestSmall = rc.senseNearbyLocationsWithLead(rc.getType().visionRadiusSquared).length
+                > 40;
     }
 
     @Override
@@ -78,24 +83,37 @@ public class ArchonAttachment extends Attachment {
         if (rc.getRoundNum() < 200) {
             buildWeights.addWeight(BuildType.MINER, 100);
         } else {
-            buildWeights.addWeight(BuildType.MINER, 5);
+            buildWeights.addWeight(BuildType.MINER, 8);
         }
 
         if (robot.isAnyArchonInDanger()) {
             buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 100);
         } else {
-            buildWeights.addWeight(BuildType.SOLDIER, 20);
+            buildWeights.addWeight(BuildType.SOLDIER, 30);
         }
 
-        if (rc.getRoundNum() < 1200 && rc.getRoundNum() > 30) {
-            buildWeights.addWeight(BuildType.BUILDER, 20);
+        if (rc.getRoundNum() < 1200 && rc.getRoundNum() > 30 ) {
+            int weight;
+            if (isMapTestSmall) {
+                if (rc.getTeamLeadAmount(rc.getTeam()) > 1000) {
+                    weight = 5;
+                } else {
+                    weight = 2;
+                }
+            } else {
+                weight = 25;
+            }
+            buildWeights.addWeight(BuildType.BUILDER, weight);
         }
     }
 
     private void build() throws GameActionException {
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1 && !isInDanger) {
-            return;
+            // No need to balance builds if we have tons of lead.
+            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000) {
+                return;
+            }
         }
 
         BuildType buildType = buildWeights.getHighestWeight();
@@ -111,6 +129,11 @@ public class ArchonAttachment extends Attachment {
             robot.getComms().setBuildIndex(currentBuildIndex);
             lastBuiltIndex = currentBuildIndex;
             buildWeights.clearWeight(buildType);
+
+            if (robot.getFriendlyArchons().size() == 1) {
+                // We can build again if we have more lead.
+                build();
+            }
         }
     }
 

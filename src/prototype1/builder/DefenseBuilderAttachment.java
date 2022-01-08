@@ -10,8 +10,6 @@ import prototype1.nav.Navigator;
 import java.util.*;
 
 public class DefenseBuilderAttachment extends Attachment {
-    private MapLocation loyalToArchon;
-    private List<MapLocation> watchtowerPositions;
     private Navigator nav;
 
     public DefenseBuilderAttachment(Robot robot) {
@@ -19,19 +17,18 @@ public class DefenseBuilderAttachment extends Attachment {
         this.nav = new Navigator(robot);
     }
 
-    int age = 0;
-
     @Override
     public void doTurn() throws GameActionException {
-        if(rc.getRoundNum() == ArchonAttachment.tiebreakerRound){
+        if(rc.getRoundNum() == ArchonAttachment.tiebreakerRound || rc.getTeamLeadAmount(rc.getTeam()) > 4000){
             robot.addAttachment(new LabBuilderAttachment(robot));
         }
         if(rc.getRoundNum() >= ArchonAttachment.tiebreakerRound){
             return;
         }
-        chooseLoyalToArchon();
         if (!healWatchtowers()) {
-            buildWatchtowers();
+            if (!buildWatchtowers()) {
+                nav.advanceToward(Util.getCenterLocation(rc));
+            }
         } else {
             rc.setIndicatorString("Healed");
         }
@@ -51,53 +48,39 @@ public class DefenseBuilderAttachment extends Attachment {
     }
 
     private boolean buildWatchtowers() throws GameActionException {
-        for (MapLocation candidate : watchtowerPositions) {
-            if (rc.getLocation().isAdjacentTo(candidate)
-                && rc.canBuildRobot(RobotType.WATCHTOWER, rc.getLocation().directionTo(candidate))
-                && new Random(robot.getComms().getBuildIndex()).nextFloat() < 0.3) {
-                rc.buildRobot(RobotType.WATCHTOWER, rc.getLocation().directionTo(candidate));
-                rc.setIndicatorString("Built");
-                return true;
+        if (rc.getTeamLeadAmount(rc.getTeam()) < 400) {
+            return false;
+        }
+
+        for (Direction dir : Util.DIRECTIONS) {
+            MapLocation loc = rc.getLocation().add(dir);
+            if (isLegalWatchtowerLoc(loc)) {
+                if (rc.canBuildRobot(RobotType.WATCHTOWER, dir)) {
+                    rc.buildRobot(RobotType.WATCHTOWER, dir);
+                    return true;
+                }
             }
         }
 
-        while (!watchtowerPositions.isEmpty()) {
-            MapLocation target = watchtowerPositions.get(0);
-            if (rc.canSenseRobotAtLocation(target) && rc.senseRobotAtLocation(target) != null) {
-                watchtowerPositions.remove(0);
-                continue;
+        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared)) {
+            if (isLegalWatchtowerLoc(loc) && !rc.isLocationOccupied(loc)) {
+                nav.advanceToward(loc);
+                Direction dir = rc.getLocation().directionTo(loc);
+                if (rc.getLocation().isAdjacentTo(loc) && rc.canBuildRobot(RobotType.WATCHTOWER, dir)) {
+                    rc.buildRobot(RobotType.WATCHTOWER, dir);
+                }
+                return true;
             }
-
-            if (!rc.getLocation().isAdjacentTo(target)) {
-                nav.advanceToward(target);
-                rc.setIndicatorString("Advancing");
-            }
-            return true;
         }
 
         return false;
     }
 
-    private void chooseLoyalToArchon() {
-        MapLocation prev = loyalToArchon;
-        loyalToArchon = Util.getClosest(rc.getLocation(), robot.getFriendlyArchons());
-        if (!loyalToArchon.equals(prev)) {
-            chooseWatchtowerPositions();
+    private boolean isLegalWatchtowerLoc(MapLocation loc) {
+        if (loc.distanceSquaredTo(robot.getHomeArchon()) <= 5) {
+            return false;
         }
-    }
 
-    private void chooseWatchtowerPositions() {
-        watchtowerPositions = new ArrayList<>(12);
-        for (int ring = 0; ring < 4; ring++) {
-            int[] deltas = {-1, 1};
-            for (int dx : deltas) {
-                for (int dy : deltas) {
-                    MapLocation loc = loyalToArchon.translate(dx * (ring + 1), dy * (ring + 1));
-                    if (Util.isOnTheMap(loc, rc)) {
-                        watchtowerPositions.add(loc);
-                    }
-                }
-            }
-        }
+        return loc.x % 3 == 0 && loc.y % 3 == 0;
     }
 }

@@ -2,6 +2,8 @@ package prototype1.builder;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.nav.Navigator;
@@ -16,6 +18,8 @@ public class SacrificeBuilderAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        heal();
+
         if (rc.senseLead(rc.getLocation()) == 0) {
             sacrificeForTheGreaterGood();
         } else {
@@ -33,6 +37,17 @@ public class SacrificeBuilderAttachment extends Attachment {
                 nav.advanceToward(closest);
             } else {
                 nav.advanceToward(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
+            }
+        }
+    }
+
+    private void heal() throws GameActionException {
+        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam())) {
+            if (info.health != info.type.health) {
+                if (rc.canRepair(info.location)) {
+                    rc.repair(info.location);
+                    rc.setIndicatorString("Healed at " + info.location);
+                }
             }
         }
     }

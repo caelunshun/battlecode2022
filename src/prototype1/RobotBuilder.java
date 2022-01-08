@@ -46,7 +46,11 @@ public class RobotBuilder {
                 break;
             case BUILDER:
                 if(robot.getRc().getRoundNum() < ArchonAttachment.tiebreakerRound) {
-                    robot.addAttachment(new SacrificeBuilderAttachment(robot));
+                    if (robot.getRc().getTeamLeadAmount(robot.getRc().getTeam()) > 1000) {
+                        robot.addAttachment(new DefenseBuilderAttachment(robot));
+                    } else {
+                        robot.addAttachment(new SacrificeBuilderAttachment(robot));
+                    }
                 } else {
                     robot.addAttachment(new LabBuilderAttachment(robot));
                 }
