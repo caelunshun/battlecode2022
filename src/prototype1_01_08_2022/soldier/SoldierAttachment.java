@@ -1,10 +1,10 @@
-package prototype1.soldier;
+package prototype1_01_08_2022.soldier;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.nav.Navigator;
+import prototype1_01_08_2022.Attachment;
+import prototype1_01_08_2022.Robot;
+import prototype1_01_08_2022.Util;
+import prototype1_01_08_2022.nav.Navigator;
 
 import java.util.Random;
 
@@ -30,10 +30,6 @@ public class SoldierAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        if (helpingArchon != null && !robot.getFriendlyArchons().contains(helpingArchon)) {
-            helpingArchon = null;
-        }
-
         if (helpingArchon != null && rc.getLocation().distanceSquaredTo(helpingArchon) > 40) {
             nav.advanceToward(helpingArchon);
         }
@@ -127,6 +123,7 @@ public class SoldierAttachment extends Attachment {
 
         if (target != null) {
             nav.advanceToward(target);
+            robot.setHomeArchon(target);
             helpingArchon = target;
         }
     }

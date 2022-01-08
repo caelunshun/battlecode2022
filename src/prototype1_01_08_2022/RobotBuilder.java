@@ -1,19 +1,19 @@
-package prototype1;
+package prototype1_01_08_2022;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import prototype1.archon.*;
-import prototype1.builder.DefenseBuilderAttachment;
-import prototype1.builder.LabBuilderAttachment;
-import prototype1.builder.RushBuilderAttachment;
-import prototype1.builder.SacrificeBuilderAttachment;
-import prototype1.generic.*;
-import prototype1.laboratory.LaboratoryAttachment;
-import prototype1.miner.MinerAttachment;
-import prototype1.soldier.SoldierAttachment;
-import prototype1.watchtower.SageAttachment;
-import prototype1.watchtower.WatchtowerAttachment;
+import prototype1_01_08_2022.archon.*;
+import prototype1_01_08_2022.builder.DefenseBuilderAttachment;
+import prototype1_01_08_2022.builder.LabBuilderAttachment;
+import prototype1_01_08_2022.builder.RushBuilderAttachment;
+import prototype1_01_08_2022.builder.SacrificeBuilderAttachment;
+import prototype1_01_08_2022.generic.*;
+import prototype1_01_08_2022.laboratory.LaboratoryAttachment;
+import prototype1_01_08_2022.miner.MinerAttachment;
+import prototype1_01_08_2022.soldier.SoldierAttachment;
+import prototype1_01_08_2022.watchtower.SageAttachment;
+import prototype1_01_08_2022.watchtower.WatchtowerAttachment;
 
 public class RobotBuilder {
     private final RobotType type;
@@ -46,7 +46,7 @@ public class RobotBuilder {
                 break;
             case BUILDER:
                 if(robot.getRc().getRoundNum() < ArchonAttachment.tiebreakerRound) {
-                    if (robot.getRc().getTeamLeadAmount(robot.getRc().getTeam()) > 1000 && robot.getRng().nextFloat() < 0.3) {
+                    if (robot.getRc().getTeamLeadAmount(robot.getRc().getTeam()) > 1000) {
                         robot.addAttachment(new DefenseBuilderAttachment(robot));
                     } else {
                         robot.addAttachment(new SacrificeBuilderAttachment(robot));
