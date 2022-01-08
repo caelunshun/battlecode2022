@@ -9,22 +9,37 @@ import prototype1.Util;
 public final class Navigator {
     private Robot robot;
 
+    // Ring buffer of recently visited locations to avoid getting stuck
+    private MapLocation[] visited = new MapLocation[3];
+    private int visitedCursor = 0;
+
+    private MapLocation target;
+
     public Navigator(Robot robot) {
         this.robot = robot;
     }
 
     public void advanceToward(MapLocation location) throws GameActionException {
+        if (!location.equals(target)) {
+            reset(location);
+        }
+
         int bestScore = Integer.MAX_VALUE;
         Direction bestDir = null;
-        for (Direction dir : Util.DIRECTIONS) {
+        outer: for (Direction dir : Util.DIRECTIONS) {
             MapLocation target = robot.getRc().getLocation().add(dir);
             if (target.x < 0 || target.y < 0
                     || target.x >= robot.getRc().getMapWidth()
                     || target.y >= robot.getRc().getMapHeight()) {
                 continue;
             }
+
+            for (MapLocation loc : visited) {
+                if (target.equals(loc)) continue outer;
+            }
+
             int dist = target.distanceSquaredTo(location);
-            int rubbleFactor = (int) (robot.getRc().senseRubble(target) * 0.2);
+            int rubbleFactor = (int) (robot.getRc().senseRubble(target) * 0.15);
             int score = dist + rubbleFactor;
             if ((score < bestScore || bestDir == null) && robot.getRc().canMove(dir)) {
                 bestDir = dir;
@@ -39,6 +54,20 @@ public final class Navigator {
 
         if (bestDir != null) {
             robot.getRc().move(bestDir);
+
+            MapLocation loc = robot.getRc().getLocation();
+            visited[visitedCursor++] = loc;
+            if (visitedCursor == visited.length) {
+                visitedCursor = 0;
+            }
         }
+    }
+
+    private void reset(MapLocation loc) {
+        target = loc;
+        for (int i = 0; i < visited.length; i++) {
+            visited[i] = null;
+        }
+        visitedCursor = 0;
     }
 }

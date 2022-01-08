@@ -100,6 +100,8 @@ public class ArchonAttachment extends Attachment {
                 } else {
                     weight = 2;
                 }
+            } else if (rc.getRoundNum() < 200) {
+                weight = 50;
             } else {
                 weight = 30;
             }

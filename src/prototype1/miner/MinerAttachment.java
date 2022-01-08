@@ -11,18 +11,56 @@ import java.util.List;
 
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
+    private double disperseTheta;
 
     public MinerAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
+        disperseTheta = getRandomAngle();
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        if (flee()) {
+            mine();
+            return;
+        };
         mine();
         if (!moveTowardCloseLead()) {
             disperse();
         }
+    }
+
+    private boolean flee() throws GameActionException {
+        if (!rc.isMovementReady()) return false;
+
+        double vx = 0;
+        double vy = 0;
+        for (RobotInfo nearby : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
+            if (nearby.type.canAttack()) {
+                double dx = rc.getLocation().x - nearby.location.x;
+                double dy = rc.getLocation().y - nearby.location.y;
+                double len = Math.hypot(dx, dy);
+                dx /= len;
+                dy /= len;
+                vx += dx;
+                vy += dy;
+            }
+        }
+
+        if (vx == 0 && vy == 0) return false;
+
+        Direction dir = Util.getDirFromAngle(Math.atan2(vy, vx));
+        int tries = 0;
+        while (!rc.canMove(dir) && tries++ < 8) dir = dir.rotateLeft();
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+            rc.setIndicatorString("Fled");
+        } else {
+            rc.setIndicatorString("Flee Failed - " + dir);
+        }
+
+        return true;
     }
 
     private boolean mine() throws GameActionException {
@@ -45,23 +83,27 @@ public class MinerAttachment extends Attachment {
     private boolean moveTowardCloseLead() throws GameActionException {
         MapLocation bestLead = null;
         int bestScore = 0;
-        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared)) {
-            int lead = rc.senseLead(loc);
-            int gold = rc.senseGold(loc);
-            if (lead > 1 || gold > 0) {
-                int score = rc.getLocation().distanceSquaredTo(loc);
-                score -= lead * 5;
-                score -= gold * 50;
 
-                if (bestLead == null || score < bestScore) {
-                    bestLead = loc;
-                    bestScore = score;
-                }
+        MapLocation[] lead = rc.senseNearbyLocationsWithLead(rc.getType().visionRadiusSquared);
+        MapLocation[] gold = rc.senseNearbyLocationsWithGold(rc.getType().visionRadiusSquared);
+
+        for (MapLocation leadLoc : lead) {
+            int leadCount = rc.senseLead(leadLoc);
+            if (leadCount <= 1) continue;
+
+            if (rc.getRoundNum() < 50 && leadCount < 10 && leadLoc.distanceSquaredTo(robot.getHomeArchon()) <= 20) {
+                continue;
             }
 
-            if (Clock.getBytecodesLeft() < 1000) {
-                break;
+            int score = rc.getLocation().distanceSquaredTo(leadLoc) - leadCount;
+
+            if (bestLead == null || score < bestScore) {
+                bestLead = leadLoc;
+                bestScore = score;
             }
+        }
+        for (MapLocation goldLoc : gold) {
+            bestLead = goldLoc;
         }
 
         if (bestLead != null) {
@@ -72,48 +114,46 @@ public class MinerAttachment extends Attachment {
     }
 
     private void disperse() throws GameActionException {
-        double vx = 0, vy = 0;
-        for (RobotInfo info : rc.senseNearbyRobots()) {
-            double weight = 5 / Math.sqrt(info.getLocation().distanceSquaredTo(rc.getLocation()));
-            if (info.team != rc.getTeam()) {
-                weight *= 1.5;
-                if (info.type.canAttack()) weight *= 2;
-            }
-
-            double dx = info.location.x - rc.getLocation().x;
-            double dy = info.location.y - rc.getLocation().y;
-            double len = Math.hypot(dx, dy);
-            dx /= len;
-            dy /= len;
-            vx -= dx * weight;
-            vy -= dy * weight;
-        }
-
-        if (rc.getMapWidth() - rc.getLocation().x < 5) {
-            vx -= 40;
-        } else if (rc.getLocation().x < 5) {
-            vx += 40;
-        }
-        if (rc.getMapHeight() - rc.getLocation().y < 5) {
-            vy -= 40;
-        } else if (rc.getLocation().y < 5) {
-            vy += 40;
-        }
-
-        MapLocation home = robot.getHomeArchon();
-        double len = Math.hypot(rc.getLocation().x - home.x, rc.getLocation().y - home.y);
-        vx += (rc.getLocation().x - home.x) / len;
-        vy += (rc.getLocation().y - home.y) / len;
-
-        double targetTheta = Math.atan2(vy, vx);
-
-        Direction dir = Util.getDirFromAngle(targetTheta);
+        rc.setIndicatorString("Dispersing");
+        if (!rc.isMovementReady()) return;
         int tries = 0;
-        while (!rc.canMove(dir) && tries++ < 8) dir = dir.rotateLeft();
+        while (!checkCurrentDisperseTheta() && tries++ < 5) {
+            resetDisperseTheta();
+        }
 
-        rc.setIndicatorString("Theta = " + Math.toDegrees(targetTheta) + ", dir = " + dir);
-        if (dir != null && rc.canMove(dir)) {
+        Direction dir = Util.getDirFromAngle(disperseTheta);
+        if (rc.canMove(dir)) {
             rc.move(dir);
         }
+
+        rc.setIndicatorString("Dispersing: Theta = " + Math.toDegrees(disperseTheta));
+    }
+
+    private boolean checkCurrentDisperseTheta() {
+        Direction dir = Util.getDirFromAngle(disperseTheta);
+        if (!rc.canMove(dir)) {
+            return false;
+        }
+
+        // Ray-trace along the current disperse theta.
+        // If we will hit the edge of the map, then stop.
+        double dy = Math.sin(disperseTheta);
+        double dx = Math.cos(disperseTheta);
+        MapLocation edgeLoc = rc.getLocation().translate((int) (dx * 5), (int) (dy * 5));
+        if (!Util.isOnTheMap(edgeLoc, rc)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void resetDisperseTheta() {
+        disperseTheta = getRandomAngle();
+    }
+
+    private double getRandomAngle() {
+        MapLocation diff = rc.getLocation().translate(-robot.getHomeArchon().x, -robot.getHomeArchon().y);
+        double angleToArchon = Math.atan2(diff.y, diff.x);
+        return angleToArchon + (robot.getRng().nextDouble() * 2 - 1) * Math.PI * 2 / 3;
     }
 }
