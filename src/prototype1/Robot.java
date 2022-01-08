@@ -5,6 +5,7 @@ import prototype1.comms.Communications;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * The core robot class.
@@ -28,8 +29,11 @@ public final class Robot {
 
     private RobotInfo homeArchon;
 
+    private Random random;
+
     public Robot(RobotController rc) throws GameActionException {
         this.rc = rc;
+        this.random = new Random(rc.getID());
         comms = new Communications(rc);
 
         for(Direction dir : Util.DIRECTIONS){
@@ -118,14 +122,18 @@ public final class Robot {
 
     private Direction moveRandomDirection;
 
-    public void moveRandom() throws GameActionException{
+    public void moveRandom() throws GameActionException {
         if (!rc.isMovementReady()) return;
-        if (moveRandomDirection == null || !rc.canMove(moveRandomDirection)) {
-            moveRandomDirection = Util.DIRECTIONS[Util.getRng().nextInt(Util.DIRECTIONS.length)];
+        while (moveRandomDirection == null || !rc.canMove(moveRandomDirection)) {
+            moveRandomDirection = Util.DIRECTIONS[random.nextInt(Util.DIRECTIONS.length)];
         }
 
         if (rc.canMove(moveRandomDirection)) {
             rc.move(moveRandomDirection);
         }
+    }
+
+    public Random getRng() {
+        return random;
     }
 }

@@ -1,10 +1,9 @@
 package prototype1.miner;
 
-import battlecode.common.Clock;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
+import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
+import prototype1.Util;
 import prototype1.nav.Navigator;
 
 import java.util.ArrayList;
@@ -12,41 +11,17 @@ import java.util.List;
 
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
-    private final List<MapLocation> leadTileQueue = new ArrayList<>();
-    private final LeadGrid leadGrid;
-    private int leadTileQueueCursor = 0;
-
-    private MapLocation targetTile;
 
     public MinerAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
-        this.leadGrid = new LeadGrid(robot);
     }
 
     @Override
     public void doTurn() throws GameActionException {
-        spotLead();
         mine();
         if (!moveTowardCloseLead()) {
-            moveTowardDistantLead();
-        }
-    }
-
-    private void spotLead() throws GameActionException {
-        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(),
-                rc.getType().visionRadiusSquared)) {
-            if (rc.senseLead(loc) > 0) {
-                LeadTile tile = leadGrid.getTile(loc);
-                if (!tile.known) {
-                    tile.known = true;
-                    leadTileQueue.add(loc);
-                }
-            }
-
-            if (Clock.getBytecodesLeft() < 1000) {
-                return;
-            }
+            disperse();
         }
     }
 
@@ -62,10 +37,6 @@ public class MinerAttachment extends Attachment {
             while (rc.senseLead(loc) > 1 && rc.canMineLead(loc)) {
                 rc.mineLead(loc);
                 rc.setIndicatorString("Mined lead");
-            }
-
-            if (rc.senseLead(loc) == 1) {
-                leadGrid.getTile(loc).lastExhaustedRound = rc.getRoundNum();
             }
         }
         return false;
@@ -100,59 +71,49 @@ public class MinerAttachment extends Attachment {
         return false;
     }
 
-    private void moveTowardDistantLead() throws GameActionException {
-        if (targetTile != null) {
-            if (rc.getLocation().distanceSquaredTo(targetTile) <= 2) {
-                targetTile = null;
+    private void disperse() throws GameActionException {
+        double vx = 0, vy = 0;
+        for (RobotInfo info : rc.senseNearbyRobots()) {
+            double weight = 5 / Math.sqrt(info.getLocation().distanceSquaredTo(rc.getLocation()));
+            if (info.team != rc.getTeam()) {
+                weight *= 1.5;
+                if (info.type.canAttack()) weight *= 2;
             }
+
+            double dx = info.location.x - rc.getLocation().x;
+            double dy = info.location.y - rc.getLocation().y;
+            double len = Math.hypot(dx, dy);
+            dx /= len;
+            dy /= len;
+            vx -= dx * weight;
+            vy -= dy * weight;
         }
 
-        if (targetTile == null) {
-            targetTile = findTargetLeadTile();
+        if (rc.getMapWidth() - rc.getLocation().x < 5) {
+            vx -= 40;
+        } else if (rc.getLocation().x < 5) {
+            vx += 40;
+        }
+        if (rc.getMapHeight() - rc.getLocation().y < 5) {
+            vy -= 40;
+        } else if (rc.getLocation().y < 5) {
+            vy += 40;
         }
 
-        if (targetTile != null) {
-            nav.advanceToward(targetTile);
-            rc.setIndicatorString("Advancing toward " + targetTile);
-        } else {
-            robot.moveRandom();
-            rc.setIndicatorString("Moving randomly");
-        }
-    }
+        MapLocation home = robot.getHomeArchon().location;
+        double len = Math.hypot(rc.getLocation().x - home.x, rc.getLocation().y - home.y);
+        vx += (rc.getLocation().x - home.x) / len;
+        vy += (rc.getLocation().y - home.y) / len;
 
-    private MapLocation findTargetLeadTile() throws GameActionException {
+        double targetTheta = Math.atan2(vy, vx);
+
+        Direction dir = Util.getDirFromAngle(targetTheta);
         int tries = 0;
+        while (!rc.canMove(dir) && tries++ < 8) dir = dir.rotateLeft();
 
-        MapLocation bestLoc = null;
-        int bestScore = 0;
-
-        while (tries < leadTileQueue.size()
-            && Clock.getBytecodesLeft() > 1000) {
-            MapLocation loc = nextLeadTileInQueue();
-            LeadTile tile = leadGrid.getTile(loc);
-
-            ++tries;
-
-            if (rc.getRoundNum() - tile.lastExhaustedRound < 100) {
-                continue;
-            }
-
-            int locScore = (int) Math.sqrt(rc.getLocation().distanceSquaredTo(loc));
-
-            if (locScore < bestScore) {
-                bestLoc = loc;
-                bestScore = locScore;
-            }
+        rc.setIndicatorString("Theta = " + Math.toDegrees(targetTheta) + ", dir = " + dir);
+        if (dir != null && rc.canMove(dir)) {
+            rc.move(dir);
         }
-
-        return bestLoc;
-    }
-
-    private MapLocation nextLeadTileInQueue() {
-        MapLocation result = leadTileQueue.get(leadTileQueueCursor++);
-        if (leadTileQueueCursor >= leadTileQueue.size()) {
-            leadTileQueueCursor = 0;
-        }
-        return result;
     }
 }

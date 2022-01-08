@@ -31,17 +31,9 @@ public class DefenseBuilderAttachment extends Attachment {
         }
         chooseLoyalToArchon();
         if (!healWatchtowers()) {
-            if (!buildWatchtowers()) {
-                sacrificeForTheGreaterGood();
-                rc.setIndicatorString("Giving Up");
-            }
+            buildWatchtowers();
         } else {
             rc.setIndicatorString("Healed");
-        }
-
-        ++age;
-        if (age > 100) {
-            sacrificeForTheGreaterGood();
         }
     }
 
@@ -106,12 +98,6 @@ public class DefenseBuilderAttachment extends Attachment {
                     }
                 }
             }
-        }
-    }
-
-    private void sacrificeForTheGreaterGood() throws GameActionException {
-        if (rc.senseLead(rc.getLocation()) == 0) {
-            rc.disintegrate(); // RIP
         }
     }
 }

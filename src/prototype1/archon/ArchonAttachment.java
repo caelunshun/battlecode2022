@@ -9,6 +9,7 @@ import prototype1.build.BuildWeightTable;
 import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ArchonAttachment extends Attachment {
@@ -24,6 +25,8 @@ public class ArchonAttachment extends Attachment {
 
     private BuildWeightTable buildWeights = new BuildWeightTable();
 
+    private boolean isLead;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
         robot.getComms().addFriendlyArchon(rc.getLocation());
@@ -32,6 +35,7 @@ public class ArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
         if (robot.getComms().getSymmetryType() != null) {
@@ -56,7 +60,10 @@ public class ArchonAttachment extends Attachment {
         if (rc.getRoundNum() == 2) {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
         }
-        initiateRush();
+
+        if (isLead) {
+            initiateRush();
+        }
 
         if (robot.getComms().getRushingArchon() != null) {
             rc.setIndicatorString("Rushing " + robot.getComms().getRushingArchon());
@@ -80,11 +87,7 @@ public class ArchonAttachment extends Attachment {
             buildWeights.addWeight(BuildType.SOLDIER, 20);
         }
 
-        if (rc.getRoundNum() < 200) {
-            buildWeights.addWeight(BuildType.BUILDER, 1);
-        }
-
-        if (rc.getRoundNum() > tiebreakerRound) {
+        if (rc.getRoundNum() < 1200 && rc.getRoundNum() > 30) {
             buildWeights.addWeight(BuildType.BUILDER, 20);
         }
     }
@@ -122,7 +125,9 @@ public class ArchonAttachment extends Attachment {
     }
 
     private Direction getAvailableBuildDirection() throws GameActionException {
-        for (Direction dir : Util.DIRECTIONS) {
+        Direction[] list = Arrays.copyOf(Util.DIRECTIONS, Util.DIRECTIONS.length);
+        Util.shuffle(list);
+        for (Direction dir : list) {
             if (rc.senseRobotAtLocation(rc.getLocation().add(dir)) == null) {
                 return dir;
             }
@@ -171,7 +176,6 @@ public class ArchonAttachment extends Attachment {
                 for (MapLocation ourLoc : initialFriendlyArchons) {
                     if (usedReflections.contains(ourLoc)) continue;
                     if (symmetry.getSymmetryLocation(ourLoc, rc).equals(enemyLoc)) {
-                        System.out.println(symmetry + ", " + ourLoc + ", E: " + enemyLoc);
                         works = true;
                         usedReflections.add(ourLoc);
                         break;
@@ -235,25 +239,23 @@ public class ArchonAttachment extends Attachment {
         return enemyHealth > ourHealth;
     }
 
+    int lastRushTurn = -1;
     private void initiateRush() throws GameActionException {
-        if (isInDanger) {
-            robot.getComms().setRushingArchon(null);
+        rc.setIndicatorString("Lead");
+        robot.getComms().setRushingArchon(null);
+
+        if (rc.getRoundNum() < 1200) {
             return;
         }
 
-        if (rc.getRoundNum() < 1000) {
+        if (rc.getRoundNum() - lastRushTurn < 200) {
             return;
         }
-
-        if (robot.getComms().getRushingArchon() != null && !robot.getEnemyArchons().contains(robot.getComms().getRushingArchon())) {
-            robot.getComms().setRushingArchon(null);
-            return;
-        }
-
-        if (robot.getComms().getRushingArchon() != null) return;
+        rc.setIndicatorString(robot.getEnemyArchons().toString());
 
         if (robot.getEnemyArchons().isEmpty()) return;
 
         robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
+        lastRushTurn = rc.getRoundNum();
     }
 }

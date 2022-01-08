@@ -42,8 +42,8 @@ public class Util {
         }
     }
 
-    public static Direction oppositeDirection(Direction dir){
-        switch(dir){
+    public static Direction oppositeDirection(Direction dir) {
+        switch (dir) {
             case NORTH:
                 return Direction.SOUTH;
             case NORTHEAST:
@@ -89,33 +89,37 @@ public class Util {
                 && loc.x < rc.getMapWidth()
                 && loc.y < rc.getMapHeight();
     }
-    public static Direction bestPossibleDirection(Direction dir, RobotController rc){
+
+    public static Direction bestPossibleDirection(Direction dir, RobotController rc) {
         double min = 9.0;
         Direction best = Direction.CENTER;
-        for(int i = 0; i < DIRECTIONS.length; i++){
+        for (int i = 0; i < DIRECTIONS.length; i++) {
             double a = getAngle(dir, DIRECTIONS[i]);
-                if(a < min && rc.canMove(DIRECTIONS[i])){
-                    min = a;
-                    best = DIRECTIONS[i];
-                }
+            if (a < min && rc.canMove(DIRECTIONS[i])) {
+                min = a;
+                best = DIRECTIONS[i];
             }
+        }
         return best;
     }
-    public static double getAngle(Direction first, Direction second){
-       return cmpAngles(Math.atan2(first.dy, first.dx), Math.atan2(second.dy, second.dx));
+
+    public static double getAngle(Direction first, Direction second) {
+        return cmpAngles(Math.atan2(first.dy, first.dx), Math.atan2(second.dy, second.dx));
     }
-    private static double cmpAngles(double a, double b) {
+
+    public static double cmpAngles(double a, double b) {
         a = normalizeAngle(a);
         b = normalizeAngle(b);
 
         if (b - a > Math.PI) {
-            return (b - a) - Math.PI*2;
+            return (b - a) - Math.PI * 2;
         } else if (b - a < -Math.PI) {
-            return (b - a) + Math.PI*2;
+            return (b - a) + Math.PI * 2;
         } else {
             return b - a;
         }
     }
+
     private static double normalizeAngle(double theta) {
         if (theta < 0) {
             theta = Math.PI * 2 + theta;
@@ -123,43 +127,57 @@ public class Util {
         theta %= Math.PI * 2;
         return theta;
     }
-    public static MapLocation getCenterLocation(RobotController rc){
+
+    public static MapLocation getCenterLocation(RobotController rc) {
         return new MapLocation(rc.getMapHeight() / 2, rc.getMapWidth() / 2);
     }
+
     public static MapLocation getReflectedLocation(RobotController rc, Robot robot) throws GameActionException {
         robot.getHomeArchon();
         SymmetryType symm = robot.getComms().getSymmetryType();
-        if( symm == null){
-           return SymmetryType.ROTATIONAL.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
+        if (symm == null) {
+            return SymmetryType.ROTATIONAL.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
         }
         return symm.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
     }
 
-    public static double getAngleFromVec(MapLocation vec){
+    public static double getAngleFromVec(MapLocation vec) {
         return Math.atan2(vec.y, vec.x);
     }
-    public static Direction getDirFromAngle(double angle){
-       if(angle > Math.PI / 8 && angle <= (3 *Math.PI / 8)){
-           return Direction.NORTHEAST;
-       }
-       if(angle > (3 *Math.PI / 8) && angle <= (5 * Math.PI / 8)){
-           return Direction.NORTH;
-       }
-        if(angle > (5 *Math.PI / 8) && angle <= (7 * Math.PI / 8)){
+
+    public static Direction getDirFromAngle(double angle) {
+        angle = normalizeAngle(angle);
+        if (angle > Math.PI / 8 && angle <= (3 * Math.PI / 8)) {
+            return Direction.NORTHEAST;
+        }
+        if (angle > (3 * Math.PI / 8) && angle <= (5 * Math.PI / 8)) {
+            return Direction.NORTH;
+        }
+        if (angle > (5 * Math.PI / 8) && angle <= (7 * Math.PI / 8)) {
             return Direction.NORTHWEST;
         }
-        if(angle > (7 *Math.PI / 8) && angle <= (9 * Math.PI / 8)){
+        if (angle > (7 * Math.PI / 8) && angle <= (9 * Math.PI / 8)) {
             return Direction.WEST;
         }
-        if(angle > (9 *Math.PI / 8) && angle <= (11 * Math.PI / 8)){
+        if (angle > (9 * Math.PI / 8) && angle <= (11 * Math.PI / 8)) {
             return Direction.SOUTHWEST;
         }
-        if(angle > (11 *Math.PI / 8) && angle <= (13 * Math.PI / 8)){
+        if (angle > (11 * Math.PI / 8) && angle <= (13 * Math.PI / 8)) {
             return Direction.SOUTH;
         }
-        if(angle > (13 *Math.PI / 8) && angle <= (15 * Math.PI / 8)){
+        if (angle > (13 * Math.PI / 8) && angle <= (15 * Math.PI / 8)) {
             return Direction.SOUTHEAST;
         }
         return Direction.EAST;
+    }
+
+    public static Direction getDirectionFromAngle(double theta) {
+        Direction best = null;
+        for (Direction dir : DIRECTIONS) {
+            if (best == null || cmpAngles(getAngle(dir, Direction.EAST), theta) < cmpAngles(getAngle(best, Direction.EAST), theta)) {
+                best = dir;
+            }
+        }
+        return best;
     }
 }

@@ -14,6 +14,7 @@ public class SoldierAttachment extends Attachment {
     private MapLocation latticeLocation;
     private final boolean willRush;
     private final boolean willDefendOtherArchon;
+    private final boolean scout;
     private MapLocation rushingArchon;
 
     public SoldierAttachment(Robot robot) {
@@ -23,6 +24,7 @@ public class SoldierAttachment extends Attachment {
         Random random = new Random(rc.getID());
         willRush = random.nextFloat() < 0.7;
         willDefendOtherArchon = random.nextFloat() < 0.5;
+        scout = random.nextFloat() < 0.2;
     }
 
     @Override
@@ -47,7 +49,7 @@ public class SoldierAttachment extends Attachment {
     private void aggravate() throws GameActionException {
         for (RobotInfo enemy : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
             if (enemy.location.distanceSquaredTo(rc.getLocation())
-                > rc.getType().actionRadiusSquared) {
+                    > rc.getType().actionRadiusSquared) {
                 nav.advanceToward(enemy.location);
                 break;
             }
@@ -65,29 +67,26 @@ public class SoldierAttachment extends Attachment {
             waitingTime = 0;
             rc.setIndicatorString("MOVING TO LATTICE LOCATION" + latticeLocation);
             return;
-        } else if(latticeLocation != null && rc.canSenseRobotAtLocation(latticeLocation)) {
-            if(rc.senseRobotAtLocation(latticeLocation).getType() == RobotType.MINER){
+        } else if (latticeLocation != null && rc.canSenseRobotAtLocation(latticeLocation)) {
+            if (rc.senseRobotAtLocation(latticeLocation).getType() == RobotType.MINER) {
                 nav.advanceToward(latticeLocation);
                 rc.setIndicatorString("MOVING TO LL EVEN WITH UNIT");
-            } else{
+            } else {
                 latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
                 rc.setIndicatorString("FOUND GOOD SPOT");
-                if(latticeLocation == null){
+                if (latticeLocation == null) {
                     nav.advanceToward(Util.getReflectedLocation(rc, robot));
                 }
             }
-        }
-        else {
-                latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
+        } else {
+            latticeLocation = findLatticePosition(rc.getType().visionRadiusSquared);
             rc.setIndicatorString("FOUND GOOD SPOT");
-                if(latticeLocation == null){
-                    nav.advanceToward(Util.getReflectedLocation(rc, robot));
-                }
-
+            if (latticeLocation == null) {
+                nav.advanceToward(Util.getReflectedLocation(rc, robot));
             }
+
         }
-
-
+    }
 
     public MapLocation findLatticePosition(int sizeOfSearch) throws GameActionException {
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(robot.getRc().getLocation(), sizeOfSearch);
@@ -110,7 +109,7 @@ public class SoldierAttachment extends Attachment {
         for (MapLocation loc : robot.getFriendlyArchons()) {
             if (robot.isArchonInDanger(loc)) {
                 if (target == null || rc.getLocation().distanceSquaredTo(loc)
-                    < rc.getLocation().distanceSquaredTo(target)) {
+                        < rc.getLocation().distanceSquaredTo(target)) {
                     target = loc;
                 }
             }

@@ -7,6 +7,7 @@ import prototype1.archon.*;
 import prototype1.builder.DefenseBuilderAttachment;
 import prototype1.builder.LabBuilderAttachment;
 import prototype1.builder.RushBuilderAttachment;
+import prototype1.builder.SacrificeBuilderAttachment;
 import prototype1.generic.*;
 import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
@@ -45,7 +46,7 @@ public class RobotBuilder {
                 break;
             case BUILDER:
                 if(robot.getRc().getRoundNum() < ArchonAttachment.tiebreakerRound) {
-                        robot.addAttachment(new DefenseBuilderAttachment(robot));
+                    robot.addAttachment(new SacrificeBuilderAttachment(robot));
                 } else {
                     robot.addAttachment(new LabBuilderAttachment(robot));
                 }

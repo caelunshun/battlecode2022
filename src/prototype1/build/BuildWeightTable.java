@@ -5,7 +5,7 @@ package prototype1.build;
  * assigned to each BuildType.
  *
  * When a unit is built, its weight is set to 0.
- * The lead archon increments weights each round
+ * The archon increments weights each round
  * based on which units require prioritization.
  */
 public class BuildWeightTable {
