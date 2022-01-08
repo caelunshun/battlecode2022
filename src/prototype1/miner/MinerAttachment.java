@@ -100,7 +100,7 @@ public class MinerAttachment extends Attachment {
             vy += 40;
         }
 
-        MapLocation home = robot.getHomeArchon().location;
+        MapLocation home = robot.getHomeArchon();
         double len = Math.hypot(rc.getLocation().x - home.x, rc.getLocation().y - home.y);
         vx += (rc.getLocation().x - home.x) / len;
         vy += (rc.getLocation().y - home.y) / len;

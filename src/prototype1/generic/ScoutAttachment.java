@@ -29,7 +29,7 @@ public class ScoutAttachment extends Attachment {
         }
         if (!alreadyFound) {
             if (predictedLocation == null) {
-                predictedLocation = goToSpotNew(type, robot.getHomeArchon().getLocation());
+                predictedLocation = goToSpotNew(type, robot.getHomeArchon());
             }
             if (predictedLocation != null) {
                 nav.advanceToward(predictedLocation);
@@ -49,7 +49,7 @@ public class ScoutAttachment extends Attachment {
                 return;
             }
             alreadyFound = false;
-            predictedLocation = goToSpotNew(nextType, robot.getHomeArchon().getLocation());
+            predictedLocation = goToSpotNew(nextType, robot.getHomeArchon());
         }
         rc.setIndicatorString("Scout - " + nextType);
     }

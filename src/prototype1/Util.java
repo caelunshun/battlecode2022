@@ -136,9 +136,9 @@ public class Util {
         robot.getHomeArchon();
         SymmetryType symm = robot.getComms().getSymmetryType();
         if (symm == null) {
-            return SymmetryType.ROTATIONAL.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
+            return SymmetryType.ROTATIONAL.getSymmetryLocation(robot.getHomeArchon(), rc);
         }
-        return symm.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
+        return symm.getSymmetryLocation(robot.getHomeArchon(), rc);
     }
 
     public static double getAngleFromVec(MapLocation vec) {

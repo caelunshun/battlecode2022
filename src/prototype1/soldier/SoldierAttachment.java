@@ -16,6 +16,7 @@ public class SoldierAttachment extends Attachment {
     private final boolean willDefendOtherArchon;
     private final boolean scout;
     private MapLocation rushingArchon;
+    private MapLocation helpingArchon;
 
     public SoldierAttachment(Robot robot) {
         super(robot);
@@ -23,12 +24,16 @@ public class SoldierAttachment extends Attachment {
 
         Random random = new Random(rc.getID());
         willRush = random.nextFloat() < 0.7;
-        willDefendOtherArchon = random.nextFloat() < 0.5;
-        scout = random.nextFloat() < 0.2;
+        willDefendOtherArchon = random.nextFloat() < 0.6;
+        scout = random.nextFloat() < 0.05;
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        if (helpingArchon != null && rc.getLocation().distanceSquaredTo(helpingArchon) > 40) {
+            nav.advanceToward(helpingArchon);
+        }
+
         aggravate();
         if (rushingArchon == null) {
             rushingArchon = robot.getComms().getRushingArchon();
@@ -37,7 +42,8 @@ public class SoldierAttachment extends Attachment {
         }
         if (willRush && rushingArchon != null ) {
             attackMicro();
-
+        } else if (scout) {
+            robot.moveRandom();
         } else if (willDefendOtherArchon && robot.isAnyArchonInDanger()) {
             defendOtherArchon();
         } else {
@@ -92,7 +98,7 @@ public class SoldierAttachment extends Attachment {
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(robot.getRc().getLocation(), sizeOfSearch);
         for (MapLocation loc : locs) {
             if ((loc.x % 2) != (loc.y % 2)) {
-                if (!rc.canSenseRobotAtLocation(loc) && robot.getHomeArchon().getLocation().distanceSquaredTo(loc) >= 5) {
+                if (!rc.canSenseRobotAtLocation(loc) && robot.getHomeArchon().distanceSquaredTo(loc) >= 5) {
                     return loc;
                 }
             }
@@ -117,6 +123,8 @@ public class SoldierAttachment extends Attachment {
 
         if (target != null) {
             nav.advanceToward(target);
+            robot.setHomeArchon(target);
+            helpingArchon = target;
         }
     }
 

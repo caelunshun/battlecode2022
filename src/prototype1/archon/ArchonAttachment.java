@@ -220,11 +220,12 @@ public class ArchonAttachment extends Attachment {
         }
     }
 
+    int inDangerTurns = 0;
     private boolean isInDanger() throws GameActionException {
         // Check if the total health of nearby enemy robots (that can attack)
         // is greater than the total health of our nearby robots (that can attack).
-        int ourHealth = 0;
-        int enemyHealth = 0;
+        double ourHealth = 0;
+        double enemyHealth = 0;
         for (RobotInfo info : rc.senseNearbyRobots()) {
             if (info.ID == rc.getID()) continue;
             if (info.type.canAttack()) {
@@ -236,7 +237,12 @@ public class ArchonAttachment extends Attachment {
             }
         }
 
-        return enemyHealth > ourHealth;
+        boolean inDanger = enemyHealth * 1.6 > ourHealth;
+        if (inDanger) inDangerTurns = 20;
+        if (inDangerTurns-- > 0) {
+            inDanger = true;
+        }
+        return inDanger;
     }
 
     int lastRushTurn = -1;

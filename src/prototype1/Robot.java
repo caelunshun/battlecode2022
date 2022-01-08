@@ -27,7 +27,7 @@ public final class Robot {
     private List<MapLocation> enemyArchons;
     private List<Boolean> archonsInDanger = new ArrayList<>();
 
-    private RobotInfo homeArchon;
+    private MapLocation homeArchon;
 
     private Random random;
 
@@ -40,7 +40,7 @@ public final class Robot {
             if(rc.canSenseRobotAtLocation(rc.getLocation().add(dir))){
                 RobotInfo info = rc.senseRobotAtLocation(rc.getLocation().add(dir));
                 if(info.getType() == RobotType.ARCHON && info.getTeam() == rc.getTeam()){
-                    homeArchon = info;
+                    homeArchon = info.location;
                 }
             }
         }
@@ -112,8 +112,12 @@ public final class Robot {
         return false;
     }
 
-    public RobotInfo getHomeArchon(){
+    public MapLocation getHomeArchon(){
         return homeArchon;
+    }
+
+    public void setHomeArchon(MapLocation loc) {
+        homeArchon = loc;
     }
 
     public Communications getComms() {
