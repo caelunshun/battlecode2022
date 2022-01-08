@@ -45,12 +45,6 @@ public class AttackAttachment extends Attachment {
         RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         ArrayList<RobotType> robotTypes = new ArrayList<RobotType>();
         for(int i = 0; i < robots.length; i++){
-            if(robots[i].getType() == RobotType.ARCHON){
-                if(rc.canAttack(robots[i].getLocation())){
-                    rc.attack(robots[i].getLocation());
-                    return true;
-                }
-            }
             if(isFirstBetter(robots[i].getType(), robots[bestLocation].getType())){
                 bestLocation = i;
             }
@@ -64,16 +58,16 @@ public class AttackAttachment extends Attachment {
     }
     public static boolean isFirstBetter(RobotType first, RobotType second){
         //look at this later order is changing
-        if(first == RobotType.ARCHON){
-            return true;
-        }
-        if(second == RobotType.ARCHON){
-            return false;
-        }
         if(first == RobotType.SOLDIER){
             return true;
         }
         if(second == RobotType.SOLDIER){
+            return false;
+        }
+        if(first == RobotType.ARCHON){
+            return true;
+        }
+        if(second == RobotType.ARCHON){
             return false;
         }
         if(first == RobotType.WATCHTOWER){

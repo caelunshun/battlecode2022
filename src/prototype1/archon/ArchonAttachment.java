@@ -241,7 +241,7 @@ public class ArchonAttachment extends Attachment {
             return;
         }
 
-        if (rc.getRoundNum() < 200) {
+        if (rc.getRoundNum() < 1000) {
             return;
         }
 

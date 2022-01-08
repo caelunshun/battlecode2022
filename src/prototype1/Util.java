@@ -135,4 +135,31 @@ public class Util {
         return symm.getSymmetryLocation(robot.getHomeArchon().getLocation(), rc);
     }
 
+    public static double getAngleFromVec(MapLocation vec){
+        return Math.atan2(vec.y, vec.x);
+    }
+    public static Direction getDirFromAngle(double angle){
+       if(angle > Math.PI / 8 && angle <= (3 *Math.PI / 8)){
+           return Direction.NORTHEAST;
+       }
+       if(angle > (3 *Math.PI / 8) && angle <= (5 * Math.PI / 8)){
+           return Direction.NORTH;
+       }
+        if(angle > (5 *Math.PI / 8) && angle <= (7 * Math.PI / 8)){
+            return Direction.NORTHWEST;
+        }
+        if(angle > (7 *Math.PI / 8) && angle <= (9 * Math.PI / 8)){
+            return Direction.WEST;
+        }
+        if(angle > (9 *Math.PI / 8) && angle <= (11 * Math.PI / 8)){
+            return Direction.SOUTHWEST;
+        }
+        if(angle > (11 *Math.PI / 8) && angle <= (13 * Math.PI / 8)){
+            return Direction.SOUTH;
+        }
+        if(angle > (13 *Math.PI / 8) && angle <= (15 * Math.PI / 8)){
+            return Direction.SOUTHEAST;
+        }
+        return Direction.EAST;
+    }
 }

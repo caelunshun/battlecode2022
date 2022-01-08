@@ -33,8 +33,9 @@ public class SoldierAttachment extends Attachment {
         } else if (!robot.getEnemyArchons().contains(rushingArchon)) {
             rushingArchon = null;
         }
-        if (willRush && rushingArchon != null) {
-            rush();
+        if (willRush && rushingArchon != null ) {
+            attackMicro();
+
         } else if (willDefendOtherArchon && robot.isAnyArchonInDanger()) {
             defendOtherArchon();
         } else {
@@ -119,4 +120,49 @@ public class SoldierAttachment extends Attachment {
             nav.advanceToward(target);
         }
     }
+
+    public void attackMicro() throws GameActionException {
+        int enemyStrength = 0;
+        int teamStrength = 0;
+        RobotInfo[] robs = rc.senseNearbyRobots(rc.getType().visionRadiusSquared);
+        for(int i = 0; i < robs.length; i++){
+            RobotInfo thisRob = robs[i];
+            if(thisRob.getTeam() == rc.getTeam() && thisRob.getType() == RobotType.SOLDIER){
+                teamStrength += thisRob.getHealth();
+            } else if(thisRob.getTeam() != rc.getTeam() && thisRob.getType().canAttack() ){
+                enemyStrength += thisRob.getHealth();
+            }
+        }
+        if ((teamStrength + rc.getHealth() - enemyStrength) < 0){
+            retreat(robs);
+            rc.setIndicatorString("RETREAT");
+        } else {
+            rush();
+            rc.setIndicatorString("RUSH");
+        }
+    }
+
+
+    public void retreat(RobotInfo[] robots) throws GameActionException{
+        int xVec = 0;
+        int yVec = 0;
+        for(int i = 0; i < robots.length; i++){
+           RobotInfo rob = robots[i];
+           if(rob.getTeam() != rc.getTeam()){
+               MapLocation vec = getVec(rob);
+               xVec += vec.x;
+               yVec += vec.y;
+           }
+        }
+        Direction dir  = Util.bestPossibleDirection(Util.getDirFromAngle(Util.getAngleFromVec(new MapLocation(xVec, yVec))), rc);
+        if(rc.canMove(dir)){
+            rc.move(dir);
+        }
+    }
+    public MapLocation getVec(RobotInfo enemy){
+        MapLocation enemyLocation = enemy.getLocation();
+        MapLocation myLocation = rc.getLocation();
+        return new MapLocation(enemyLocation.x - myLocation.x, enemyLocation.y - myLocation.y);
+    }
+
 }
