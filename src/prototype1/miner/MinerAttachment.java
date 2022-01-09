@@ -11,12 +11,10 @@ import java.util.List;
 
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
-    private double disperseTheta;
 
     public MinerAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
-        disperseTheta = getRandomAngle();
     }
 
     @Override
@@ -26,8 +24,8 @@ public class MinerAttachment extends Attachment {
             return;
         };
         mine();
-        if (!moveTowardCloseLead()) {
-            disperse();
+        if (moveTowardCloseLead()) {
+            robot.endTurn();
         }
     }
 
@@ -81,6 +79,8 @@ public class MinerAttachment extends Attachment {
     }
 
     private boolean moveTowardCloseLead() throws GameActionException {
+        if (rc.senseLead(rc.getLocation()) > 1) return true;
+
         MapLocation bestLead = null;
         int bestScore = 0;
 
@@ -111,49 +111,5 @@ public class MinerAttachment extends Attachment {
             return true;
         }
         return false;
-    }
-
-    private void disperse() throws GameActionException {
-        rc.setIndicatorString("Dispersing");
-        if (!rc.isMovementReady()) return;
-        int tries = 0;
-        while (!checkCurrentDisperseTheta() && tries++ < 5) {
-            resetDisperseTheta();
-        }
-
-        Direction dir = Util.getDirFromAngle(disperseTheta);
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-        }
-
-        rc.setIndicatorString("Dispersing: Theta = " + Math.toDegrees(disperseTheta));
-    }
-
-    private boolean checkCurrentDisperseTheta() {
-        Direction dir = Util.getDirFromAngle(disperseTheta);
-        if (!rc.canMove(dir)) {
-            return false;
-        }
-
-        // Ray-trace along the current disperse theta.
-        // If we will hit the edge of the map, then stop.
-        double dy = Math.sin(disperseTheta);
-        double dx = Math.cos(disperseTheta);
-        MapLocation edgeLoc = rc.getLocation().translate((int) (dx * 5), (int) (dy * 5));
-        if (!Util.isOnTheMap(edgeLoc, rc)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void resetDisperseTheta() {
-        disperseTheta = getRandomAngle();
-    }
-
-    private double getRandomAngle() {
-        MapLocation diff = rc.getLocation().translate(-robot.getHomeArchon().x, -robot.getHomeArchon().y);
-        double angleToArchon = Math.atan2(diff.y, diff.x);
-        return angleToArchon + (robot.getRng().nextDouble() * 2 - 1) * Math.PI * 2 / 3;
     }
 }

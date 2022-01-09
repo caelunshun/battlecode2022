@@ -2,10 +2,12 @@ package prototype1.archon;
 
 import battlecode.common.*;
 import prototype1.Attachment;
+import prototype1.BotConstants;
 import prototype1.Robot;
 import prototype1.Util;
 import prototype1.build.BuildType;
 import prototype1.build.BuildWeightTable;
+import prototype1.comms.BecomeSwarmLeader;
 import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
@@ -76,23 +78,25 @@ public class ArchonAttachment extends Attachment {
         if (isInDanger) {
             rc.setIndicatorString("In Danger");
         }
+
+        assignSwarmLeaders();
     }
 
     private void incrementBuildWeights() throws GameActionException {
         // Increment the weights in the build table based on priorities.
         if (rc.getRoundNum() < 200) {
-            buildWeights.addWeight(BuildType.MINER, 100);
+            buildWeights.addWeight(BuildType.MINER, 60);
         } else {
-            buildWeights.addWeight(BuildType.MINER, 5);
+            buildWeights.addWeight(BuildType.MINER, 10);
         }
 
         if (robot.isAnyArchonInDanger()) {
-            buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 100);
+            buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 200);
         } else {
             buildWeights.addWeight(BuildType.SOLDIER, 30);
         }
 
-        if (rc.getRoundNum() < 1200 && rc.getRoundNum() > 30 ) {
+        if (rc.getRoundNum() > BotConstants.DEFENSE_MODE_TURN) {
             int weight;
             if (isMapTestSmall) {
                 if (rc.getTeamLeadAmount(rc.getTeam()) > 1000) {
@@ -262,7 +266,17 @@ public class ArchonAttachment extends Attachment {
             }
         }
 
-        boolean inDanger = enemyHealth * 1.6 > ourHealth;
+        boolean incomingRush = false;
+        for (MapLocation incoming : robot.getComms().getSpottedDangers()) {
+            if (incoming == null) continue;
+            if (incoming.distanceSquaredTo(rc.getLocation()) <= 400) {
+                incomingRush = true;
+                break;
+            }
+        }
+
+        boolean inDanger = enemyHealth * 1.6 > ourHealth || incomingRush;
+
         if (inDanger) inDangerTurns = 20;
         if (inDangerTurns-- > 0) {
             inDanger = true;
@@ -288,5 +302,32 @@ public class ArchonAttachment extends Attachment {
 
         robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
         lastRushTurn = rc.getRoundNum();
+    }
+
+    private boolean builtSwarm;
+    private void assignSwarmLeaders() throws GameActionException {
+        if (builtSwarm && robot.getFriendlyArchons().size() > 1) return;
+
+        MapLocation[] swarms = robot.getComms().getSwarms();
+        int swarmCount = 0;
+        for (MapLocation loc : swarms) if (loc != null) ++swarmCount;
+
+        if (swarmCount == BotConstants.NUM_SWARMS) return;
+
+        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
+            if (info.type == RobotType.SOLDIER) {
+                boolean isAlreadyLeader = false;
+                for (MapLocation swarm : swarms) if (info.location.equals(swarm)) {
+                    isAlreadyLeader = true;
+                    break;
+                }
+
+                if (isAlreadyLeader) continue;
+
+                robot.getComms().commandBecomeSwarmLeader(new BecomeSwarmLeader(info.ID, swarmCount));
+                builtSwarm = true;
+                return;
+            }
+        }
     }
 }

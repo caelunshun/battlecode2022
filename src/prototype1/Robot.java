@@ -31,6 +31,8 @@ public final class Robot {
 
     private Random random;
 
+    private boolean endTurn = false;
+
     public Robot(RobotController rc) throws GameActionException {
         this.rc = rc;
         this.random = new Random(rc.getID());
@@ -44,6 +46,10 @@ public final class Robot {
                 }
             }
         }
+    }
+
+    public void endTurn() {
+        endTurn = true;
     }
 
     public RobotController getRc() {
@@ -76,6 +82,10 @@ public final class Robot {
     private void doTurn() throws GameActionException {
         for (Attachment attachment : attachments) {
             attachment.doTurn();
+            if (endTurn) {
+                endTurn = false;
+                return;
+            }
         }
     }
 

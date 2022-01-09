@@ -3,6 +3,7 @@ package prototype1.comms;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import prototype1.BotConstants;
 import prototype1.build.BuildWeightTable;
 import prototype1.generic.SymmetryType;
 
@@ -24,15 +25,23 @@ import java.util.List;
  * - next 4 slots: the positions of enemy archons
  * - next slot: archon danger statuses
  * - next slot: the archon getting rushed
+ * - next NUM_SWARMS slots: locations of each soldier swarm
+ * - next NUM_SWARMS slots: commands to appoint swarm leaders. Message contains
+ *  robot ID (30 bits) and the swarm to become the leader of (2 bits). This command
+ *  should only be issued by a) the lead archon and b) swarm leaders about to die who
+ *  need to transfer control.
+ *  - next 4 slots: spotted dangers
  */
 public final class Communications {
-    private RobotController rc;
+    private final RobotController rc;
 
     private static final Range SEGMENT_FRIENDLY_ARCHONS = new Range(0, 4);
     private static final Range SEGMENT_ENEMY_ARCHONS = new Range(4, 8);
     private static final int ARCHON_DANGER = 8;
     private static final int RUSHING_ARCHON = 9;
-    private static final Range SEGMENT_BUILD_WEIGHTS = new Range(10, 17);
+    private static final Range SEGMENT_SWARM_LOCATIONS = new Range(10, 12);
+    private static final Range SEGMENT_SWARM_COMMANDS = new Range(12, 14);
+    private static final Range SEGMENT_SPOTTED_DANGERS = new Range(14, 18);
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -126,6 +135,71 @@ public final class Communications {
             enc.writeMapLocation(loc);
             writeSlot(RUSHING_ARCHON, enc.finish());
         }
+    }
+
+    public MapLocation[] getSwarms() throws GameActionException {
+        MapLocation[] swarms = new MapLocation[BotConstants.NUM_SWARMS];
+        for (int i = 0; i < swarms.length; i++) {
+            int slot = SEGMENT_SWARM_LOCATIONS.start + i;
+            if (isSlotFree(slot)) continue;
+            BitDecoder dec = new BitDecoder(readSlot(slot));
+            swarms[i] = dec.readMapLocation();
+        }
+        return swarms;
+    }
+
+    public void setSwarmLocation(int swarmIndex, MapLocation loc) throws GameActionException {
+        BitEncoder enc = new BitEncoder();
+        enc.writeMapLocation(loc);
+        writeSlot(SEGMENT_SWARM_LOCATIONS.start + swarmIndex, enc.finish());
+    }
+
+    public void clearSwarm(int swarmIndex) throws GameActionException {
+        clearSlot(SEGMENT_SWARM_LOCATIONS.start + swarmIndex);
+    }
+
+    public BecomeSwarmLeader[] getBecomeSwarmLeaderCommands() throws GameActionException {
+        BecomeSwarmLeader[] cmds = new BecomeSwarmLeader[BotConstants.NUM_SWARMS];
+        for (int i = 0; i < cmds.length; i++) {
+            int slot = SEGMENT_SWARM_COMMANDS.start + i;
+            if (isSlotFree(i)) continue;
+            BitDecoder dec = new BitDecoder(readSlot(slot));
+            int robotID = dec.read(30);
+            int swarmIndex = dec.read(2);
+            cmds[i] = new BecomeSwarmLeader(robotID, swarmIndex);
+        }
+        return cmds;
+    }
+
+    public void commandBecomeSwarmLeader(BecomeSwarmLeader command) throws GameActionException {
+        BitEncoder enc = new BitEncoder();
+        enc.write(command.robotID, 30);
+        enc.write(command.swarmIndex, 2);
+        writeSlot(SEGMENT_SWARM_COMMANDS.start + command.swarmIndex, enc.finish());
+    }
+
+    public void clearCommandBecomeSwarmLeader(BecomeSwarmLeader command) throws GameActionException {
+        clearSlot(SEGMENT_SWARM_COMMANDS.start + command.swarmIndex);
+    }
+
+    public MapLocation[] getSpottedDangers() throws GameActionException {
+        MapLocation[] arr = new MapLocation[4];
+        for (int i = 0; i < arr.length; i++) {
+            int slot = SEGMENT_SPOTTED_DANGERS.start + i;
+            if (isSlotFree(slot)) continue;
+            BitDecoder dec = new BitDecoder(readSlot(slot));
+            arr[i] = dec.readMapLocation();
+        }
+        return arr;
+    }
+
+    public void addSpottedDanger(MapLocation loc) throws GameActionException {
+        int cursor = rc.readSharedArray(61);
+        BitEncoder enc = new BitEncoder();
+        enc.writeMapLocation(loc);
+        writeSlot(SEGMENT_SPOTTED_DANGERS.start + cursor++, enc.finish());
+        if (cursor == 4) cursor = 0;
+        rc.writeSharedArray(61, cursor);
     }
 
     public SymmetryType getSymmetryType() throws GameActionException {

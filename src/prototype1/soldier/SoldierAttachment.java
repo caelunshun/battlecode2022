@@ -14,7 +14,6 @@ public class SoldierAttachment extends Attachment {
     private MapLocation latticeLocation;
     private final boolean willRush;
     private final boolean willDefendOtherArchon;
-    private final boolean scout;
     private MapLocation rushingArchon;
     private MapLocation helpingArchon;
 
@@ -25,7 +24,6 @@ public class SoldierAttachment extends Attachment {
         Random random = new Random(rc.getID());
         willRush = random.nextFloat() < 0.7;
         willDefendOtherArchon = random.nextFloat() < 0.6;
-        scout = random.nextFloat() < 0.05;
     }
 
     @Override
@@ -46,12 +44,11 @@ public class SoldierAttachment extends Attachment {
         }
         if (willRush && rushingArchon != null ) {
             attackMicro();
-        } else if (scout) {
-            robot.moveRandom();
         } else if (willDefendOtherArchon && robot.isAnyArchonInDanger()) {
             defendOtherArchon();
-        } else {
+        } else if (rc.getRoundNum() > 400) {
             moveToLatticePosition();
+            robot.endTurn();
         }
     }
 

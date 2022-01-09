@@ -12,6 +12,7 @@ import prototype1.generic.*;
 import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
 import prototype1.soldier.SoldierAttachment;
+import prototype1.soldier.SwarmSoldierAttachment;
 import prototype1.watchtower.SageAttachment;
 import prototype1.watchtower.WatchtowerAttachment;
 
@@ -30,6 +31,7 @@ public class RobotBuilder {
 
     private void addAttachments(Robot robot) throws GameActionException  {
         robot.addAttachment(new ArchonSpotterAttachment(robot));
+        robot.addAttachment(new EnemyRushSpotterAttachment(robot));
         switch (type) {
             case ARCHON:
                 robot.addAttachment(new ArchonAttachment(robot));
@@ -43,6 +45,7 @@ public class RobotBuilder {
                 break;
             case MINER:
                 robot.addAttachment(new MinerAttachment(robot));
+                robot.addAttachment(new DispersionAttachment(robot));
                 break;
             case BUILDER:
                 if(robot.getRc().getRoundNum() < ArchonAttachment.tiebreakerRound) {
@@ -66,9 +69,10 @@ public class RobotBuilder {
                 if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 2) {
                     robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
                 }
-                robot.addAttachment(new SoldierAttachment(robot));
                 robot.addAttachment(new AttackAttachment(robot));
-               // robot.addAttachment(new RandomMovementAttachment(robot));
+                robot.addAttachment(new SwarmSoldierAttachment(robot));
+                robot.addAttachment(new SoldierAttachment(robot));
+                robot.addAttachment(new DispersionAttachment(robot));
                 break;
             case SAGE:
                 robot.addAttachment(new SageAttachment(robot));
