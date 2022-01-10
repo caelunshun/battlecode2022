@@ -1,10 +1,10 @@
-package prototype1;
+package prototype1_01_09_2022;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
-import prototype1.generic.SymmetryType;
+import prototype1_01_09_2022.generic.SymmetryType;
 
 import java.util.Collection;
 import java.util.Random;
@@ -104,7 +104,7 @@ public class Util {
     }
 
     public static double getAngle(Direction first, Direction second) {
-        return Math.abs(cmpAngles(Math.atan2(first.dy, first.dx), Math.atan2(second.dy, second.dx)));
+        return cmpAngles(Math.atan2(first.dy, first.dx), Math.atan2(second.dy, second.dx));
     }
 
     public static double cmpAngles(double a, double b) {

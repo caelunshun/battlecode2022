@@ -1,12 +1,12 @@
-package prototype1.soldier;
+package prototype1_01_09_2022.soldier;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.comms.CryForHelp;
-import prototype1.generic.DispersionAttachment;
-import prototype1.nav.Navigator;
+import prototype1_01_09_2022.Attachment;
+import prototype1_01_09_2022.Robot;
+import prototype1_01_09_2022.Util;
+import prototype1_01_09_2022.comms.CryForHelp;
+import prototype1_01_09_2022.generic.DispersionAttachment;
+import prototype1_01_09_2022.nav.Navigator;
 
 import java.util.Arrays;
 
@@ -121,47 +121,23 @@ public class SwarmSoldierAttachment extends Attachment {
     }
 
     private void advance() throws GameActionException {
-        if (!rc.isMovementReady()) return;
-        Direction idealDir = rc.getLocation().directionTo(closestEnemy.location);
-        Direction dir = getOptimalDir(idealDir);
-        if (dir != null) {
+        Direction dir = rc.getLocation().directionTo(closestEnemy.location);
+        if (rc.canMove(dir)) {
             rc.move(dir);
-            rc.setIndicatorString("Advanced " + dir + " (ideal = " + idealDir + ")");
+            rc.setIndicatorString("Advanced " + dir);
         } else {
-            rc.setIndicatorString("Failed to Advance " + idealDir);
+            rc.setIndicatorString("Failed to Advance " + dir);
         }
     }
 
     private void retreat() throws GameActionException {
-        if (!rc.isMovementReady()) return;
-        Direction idealDir = closestEnemy.location.directionTo(rc.getLocation());
-        Direction dir = getOptimalDir(idealDir);
-        if (dir != null) {
+        Direction dir = closestEnemy.location.directionTo(rc.getLocation());
+        if (rc.canMove(dir)) {
             rc.move(dir);
-            rc.setIndicatorString("Retreated " + dir + " (ideal = " + idealDir + ")");
+            rc.setIndicatorString("Retreated " + dir);
         } else {
-            rc.setIndicatorString("Failed to Retreat " + idealDir);
+            rc.setIndicatorString("Failed to Retreat " + dir);
         }
-    }
-
-    private Direction getOptimalDir(Direction ideal) throws GameActionException {
-        Direction best = null;
-        double bestScore = 0;
-        for (Direction dir : Util.DIRECTIONS) {
-            if (!rc.canMove(dir)) continue;
-            double angle = Util.getAngle(dir, ideal);
-            if (angle > Math.PI / 2) {
-                continue;
-            }
-            MapLocation loc = rc.getLocation().add(dir);
-            int rubble = rc.senseRubble(loc);
-            double score = angle / (Math.PI / 2) * 20 + rubble;
-            if (best == null || score < bestScore) {
-                best = dir;
-                bestScore = score;
-            }
-        }
-        return best;
     }
 
     private boolean isOutnumbered() {
