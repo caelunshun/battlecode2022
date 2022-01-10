@@ -19,22 +19,8 @@ public class AttackAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-       // advanceTowardEnemyArchon();
+        if (!rc.isActionReady()) return;
         lookForEnemy();
-    }
-
-    private void advanceTowardEnemyArchon() throws GameActionException {
-        MapLocation closestArchon = null;
-        for (MapLocation loc : robot.getEnemyArchons()) {
-            if (closestArchon == null
-                || closestArchon.distanceSquaredTo(rc.getLocation()) > loc.distanceSquaredTo(rc.getLocation())) {
-                closestArchon = loc;
-            }
-        }
-
-        if (closestArchon != null && closestArchon.distanceSquaredTo(rc.getLocation()) > 8) {
-            nav.advanceToward(closestArchon);
-        }
     }
 
     public boolean lookForEnemy() throws GameActionException {

@@ -2,209 +2,173 @@ package prototype1.soldier;
 
 import battlecode.common.*;
 import prototype1.Attachment;
-import prototype1.BotConstants;
 import prototype1.Robot;
 import prototype1.Util;
-import prototype1.comms.BecomeSwarmLeader;
-import prototype1.generic.SymmetryType;
+import prototype1.comms.CryForHelp;
+import prototype1.generic.DispersionAttachment;
 import prototype1.nav.Navigator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 public class SwarmSoldierAttachment extends Attachment {
-    /**
-     * The swarm we're a part of
-     */
-    private int swarmIndex = -1;
-    private boolean isLeader;
-    private MapLocation swarmLocation;
-
     private final Navigator nav;
+    private final DispersionAttachment dispersion;
 
+    // States valid for current round.
+    // Used for combat micro.
+
+    // number of enemy soldiers in the vision radius
+    private int numEnemies;
+    // closest enemy (prioritizing soldiers over other units)
+    private RobotInfo closestEnemy;
+    // number of friendly soldiers within attack radius + 1
+    // of closestEnemy
+    private int numFriendlies;
+    // other cries for help
+    private CryForHelp[] criesForHelp;
 
     public SwarmSoldierAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
+        this.dispersion = new DispersionAttachment(robot);
     }
 
     @Override
     public void doTurn() throws GameActionException {
-        if (rc.getRoundNum() > BotConstants.DEFENSE_MODE_TURN) return;
+        updateStates();
+        // updateRush();
+        doCombatMicro();
 
-        handleLeaderAppoint();
-        if (!hasSwarmIndex()) {
-            findSwarmIndex();
-
-            if (!hasSwarmIndex()) {
-                rc.setIndicatorString("Missing Swarm");
-                return;
-            }
-        }
-
-        swarmLocation = robot.getComms().getSwarms()[swarmIndex];
-
-        if (isLeader) {
-            robot.getComms().setSwarmLocation(swarmIndex, rc.getLocation());
-            int swarmSize = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam()).length;
-            rc.setIndicatorString("Swarm Leader - " + swarmIndex + " - size = " + swarmSize);
-
-            if (isGoingToDie()) {
-                appointNewLeader();
-            }
-
-            if (!doMicroMovements()) {
-                if (swarmSize >= 4) {
-                    doLeaderMacroMovement();
+        if (closestEnemy == null) {
+            if (!followCallsForHelp()) {
+                if (!rushArchons()) {
+                    dispersion.doTurn();
                 }
             }
-        } else {
-            rc.setIndicatorString("Swarm " + swarmIndex);
-            if (!doMicroMovements()) {
-                nav.advanceToward(swarmLocation);
+        }
+    }
+
+    private void updateStates() throws GameActionException {
+        numEnemies = 0;
+        closestEnemy = null;
+        numFriendlies = 0;
+        criesForHelp = robot.getComms().getCriesForHelp();
+
+        for (RobotInfo info : rc.senseNearbyRobots()) {
+            if (info.team == rc.getTeam().opponent()) {
+                if (info.type.canAttack()) {
+                    ++numEnemies;
+                }
+
+                if (closestEnemy == null
+                        || (!closestEnemy.type.canAttack() && info.type.canAttack())
+                        || rc.getLocation().distanceSquaredTo(info.location) < rc.getLocation().distanceSquaredTo(closestEnemy.location)) {
+                    closestEnemy = info;
+                }
             }
         }
 
-        robot.endTurn();
-    }
+        if (closestEnemy == null) return;
 
-    private boolean isGoingToDie() {
-        return rc.getHealth() < rc.getType().health * 0.5;
-    }
-
-    private void appointNewLeader() throws GameActionException {
-        RobotInfo bestCandidate = null;
+        // Second pass: friendlies
         for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
-            if (info.health < 25) continue;
-            if (info.type != RobotType.SOLDIER) continue;
-            if (bestCandidate == null || info.health > bestCandidate.health) {
-                bestCandidate = info;
+            if (info.ID == rc.getID()) continue;
+            if (closestEnemy.location.distanceSquaredTo(info.location) <= 20) {
+                ++numFriendlies;
+            }
+        }
+    }
+
+    private void updateRush() throws GameActionException {
+        MapLocation closestEnemyArchon = Util.getClosest(rc.getLocation(), robot.getEnemyArchons());
+        if (closestEnemyArchon != null && closestEnemyArchon.distanceSquaredTo(rc.getLocation()) <= 20) {
+            if (isOutnumbered()) {
+                robot.getComms().setRushingArchon(null);
+            } else {
+                robot.getComms().setRushingArchon(closestEnemyArchon);
             }
         }
 
-        if (bestCandidate != null) {
-            robot.getComms().commandBecomeSwarmLeader(new BecomeSwarmLeader(bestCandidate.ID, swarmIndex));
-            isLeader = false;
-            rc.setIndicatorString("Delegating Swarm Leadership");
+        if (robot.getComms().getRushingArchon() != null
+            && !robot.getEnemyArchons().contains(robot.getComms().getRushingArchon())) {
+            robot.getComms().setRushingArchon(null);
+        }
+    }
+
+    private void doCombatMicro() throws GameActionException {
+        if (closestEnemy == null) return;
+
+        // Goal: stay exactly within attack radius of
+        // the closest enemy, while avoiding all other enemies.
+        // HOWEVER: if we're outnumbered, then we issue a cry
+        // for help instead, then retreat.
+        if (isOutnumbered()) {
+            issueCryForHelp();
+            retreat();
+            rc.setIndicatorString("Outnumbered from " + closestEnemy.location);
         } else {
-            // Swarm is gone... RIP.
-            robot.getComms().clearSwarm(swarmIndex);
-            rc.setIndicatorString("Swarm has died. RIP");
-        }
-    }
-
-    private void handleLeaderAppoint() throws GameActionException {
-        for (BecomeSwarmLeader cmd : robot.getComms().getBecomeSwarmLeaderCommands()) {
-            if (cmd == null) continue;
-            if (cmd.robotID == rc.getID()) {
-                swarmIndex = cmd.swarmIndex;
-                isLeader = true;
+            if (rc.getLocation().distanceSquaredTo(closestEnemy.location) < 9) {
+                retreat(); // keep at minimum distance away
+            } else if (rc.getLocation().distanceSquaredTo(closestEnemy.location) > rc.getType().actionRadiusSquared) {
+                advance(); // get close enough to shoot
             }
         }
     }
 
-    private void findSwarmIndex() throws GameActionException {
-        int closest = -1;
-        MapLocation[] swarms = robot.getComms().getSwarms();
-        for (int i = 0; i < swarms.length; i++) {
-            MapLocation swarm = swarms[i];
-            if (swarm == null) continue;
-            if (closest == -1 || swarm.distanceSquaredTo(rc.getLocation()) < swarms[closest].distanceSquaredTo(rc.getLocation())) {
-                closest = i;
-            }
-        }
-
-        swarmIndex = closest;
+    private void issueCryForHelp() throws GameActionException {
+        CryForHelp cry = new CryForHelp(closestEnemy.location, numEnemies, rc.getRoundNum());
+        robot.getComms().addCryForHelp(cry);
     }
 
-    private boolean hasSwarmIndex() {
-        return swarmIndex != -1;
-    }
-
-    int retreatTurns = 0;
-    double retreatX;
-    double retreatY;
-
-    private boolean doMicroMovements() throws GameActionException {
-        int enemyDamage = 0;
-        MapLocation closestPrey = null;
-
-        double vx = 0;
-        double vy = 0;
-
-        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
-            if (info.type.canAttack() || info.type == RobotType.ARCHON) {
-                if (info.type.damage > 0) {
-                    enemyDamage += info.type.damage;
-                }
-
-                double dx = rc.getLocation().x - info.location.x;
-                double dy = rc.getLocation().y - info.location.y;
-                double len = Math.hypot(dy, dx);
-                dx /= len;
-                dy /= len;
-                vx += dx;
-                vy += dy;
-            } else if (closestPrey == null
-                || rc.getLocation().distanceSquaredTo(closestPrey) > rc.getLocation().distanceSquaredTo(info.location)){
-                closestPrey = info.location;
-            }
-        }
-
-        int ourDamage = 0;
-        for (RobotInfo info : rc.senseNearbyRobots(8, rc.getTeam())) {
-            if (info.type.canAttack()) {
-                ourDamage += info.type.damage;
-            }
-        }
-
-        --retreatTurns;
-        if (ourDamage >= enemyDamage * 2 && retreatTurns <= 0) {
-            if (closestPrey != null) {
-                nav.advanceToward(closestPrey);
-                return true;
-            }
+    private void advance() throws GameActionException {
+        Direction dir = rc.getLocation().directionTo(closestEnemy.location);
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+            rc.setIndicatorString("Advanced " + dir);
         } else {
-            // Retreat.
-            rc.setIndicatorString("Retreating - " + vy + ", " + vx);
-            if (vx == 0 && vy == 0) {
-                vx = retreatX;
-                vy = retreatY;
-            }
-            Direction dir = Util.bestPossibleDirection(Util.getDirFromAngle(Math.atan2(vy, vx)), rc);
+            rc.setIndicatorString("Failed to Advance " + dir);
+        }
+    }
 
-            if (rushingArchon != null) {
-                dangerArchons.add(rushingArchon);
-                rushingArchon = null;
-            }
+    private void retreat() throws GameActionException {
+        Direction dir = closestEnemy.location.directionTo(rc.getLocation());
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+            rc.setIndicatorString("Retreated " + dir);
+        } else {
+            rc.setIndicatorString("Failed to Retreat " + dir);
+        }
+    }
 
-            if (dir != null && rc.canMove(dir)) {
-                rc.move(dir);
-                return true;
-            }
+    private boolean isOutnumbered() {
+        return numEnemies > numFriendlies * 0.8;
+    }
 
-            retreatTurns = 10;
-            retreatX = vx;
-            retreatY = vy;
+    private boolean followCallsForHelp() throws GameActionException {
+        CryForHelp closest = null;
+        for (CryForHelp cry : criesForHelp) {
+            if (cry == null) continue;
+            if (rc.getRoundNum() - cry.roundNumber > 2) continue;
+            if (closest == null
+                || rc.getLocation().distanceSquaredTo(cry.enemyLoc) < rc.getLocation().distanceSquaredTo(closest.enemyLoc)) {
+                closest = cry;
+            }
+        }
+
+        if (closest == null) return false;
+
+        rc.setIndicatorString("Following Cry for Help " + closest.enemyLoc);
+
+        nav.advanceToward(closest.enemyLoc);
+        return true;
+    }
+
+    private boolean rushArchons() throws GameActionException {
+        MapLocation rush = robot.getComms().getRushingArchon();
+        if (rush != null) {
+            nav.advanceToward(rush);
+            return true;
         }
         return false;
-    }
-
-    private MapLocation rushingArchon;
-    private List<MapLocation> dangerArchons = new ArrayList<>();
-
-    private void doLeaderMacroMovement() throws GameActionException {
-        for (MapLocation enemy : robot.getEnemyArchons()) {
-            if (enemy.distanceSquaredTo(rc.getLocation()) < 12 * 12 && !dangerArchons.contains(enemy)) {
-                rushingArchon = enemy;
-                break;
-            }
-        }
-
-        if (rushingArchon != null) {
-            nav.advanceToward(rushingArchon);
-        } else if (rc.getRoundNum() % 2 == 0) {
-            robot.moveRandom();
-        }
     }
 }

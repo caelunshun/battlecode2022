@@ -31,7 +31,6 @@ public class RobotBuilder {
 
     private void addAttachments(Robot robot) throws GameActionException  {
         robot.addAttachment(new ArchonSpotterAttachment(robot));
-        robot.addAttachment(new EnemyRushSpotterAttachment(robot));
         switch (type) {
             case ARCHON:
                 robot.addAttachment(new ArchonAttachment(robot));
@@ -71,7 +70,7 @@ public class RobotBuilder {
                 }*/
                 robot.addAttachment(new AttackAttachment(robot));
                 robot.addAttachment(new SwarmSoldierAttachment(robot));
-                robot.addAttachment(new SoldierAttachment(robot));
+                robot.addAttachment(new AttackAttachment(robot));
                 break;
             case SAGE:
                 robot.addAttachment(new SageAttachment(robot));

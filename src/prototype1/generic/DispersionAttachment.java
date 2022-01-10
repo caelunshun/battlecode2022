@@ -35,9 +35,14 @@ public class DispersionAttachment extends Attachment {
         rc.setIndicatorString("Dispersing: Theta = " + Math.toDegrees(theta));
     }
 
-    private boolean checkCurrentDisperseTheta() {
+    private boolean checkCurrentDisperseTheta() throws GameActionException {
         Direction dir = Util.getDirFromAngle(theta);
         if (!rc.canMove(dir)) {
+            return false;
+        }
+
+        MapLocation loc = rc.getLocation().add(dir);
+        if (rc.senseRubble(loc) >= 40) {
             return false;
         }
 

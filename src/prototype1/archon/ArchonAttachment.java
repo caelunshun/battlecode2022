@@ -72,14 +72,9 @@ public class ArchonAttachment extends Attachment {
             initiateRush();
         }
 
-        if (robot.getComms().getRushingArchon() != null) {
-            rc.setIndicatorString("Rushing " + robot.getComms().getRushingArchon());
-        }
         if (isInDanger) {
             rc.setIndicatorString("In Danger");
         }
-
-        assignSwarmLeaders();
     }
 
     private void incrementBuildWeights() throws GameActionException {
@@ -264,17 +259,7 @@ public class ArchonAttachment extends Attachment {
             }
         }
 
-        boolean incomingRush = false;
-        for (MapLocation incoming : robot.getComms().getSpottedDangers()) {
-            if (incoming == null) continue;
-            if (incoming.distanceSquaredTo(rc.getLocation()) <= 400) {
-                incomingRush = true;
-                robot.getComms().clearSpottedDanger(incoming);
-                break;
-            }
-        }
-
-        boolean inDanger = enemyHealth * 1.6 > ourHealth || incomingRush;
+        boolean inDanger = enemyHealth * 1.6 > ourHealth;
 
         if (inDanger) inDangerTurns = 20;
         if (inDangerTurns-- > 0) {
@@ -285,8 +270,7 @@ public class ArchonAttachment extends Attachment {
 
     int lastRushTurn = -1;
     private void initiateRush() throws GameActionException {
-        rc.setIndicatorString("Lead");
-        robot.getComms().setRushingArchon(null);
+        // robot.getComms().setRushingArchon(null);
 
         if (rc.getRoundNum() < 1200) {
             return;
@@ -301,34 +285,5 @@ public class ArchonAttachment extends Attachment {
 
         robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
         lastRushTurn = rc.getRoundNum();
-    }
-
-    private boolean builtSwarm;
-    private void assignSwarmLeaders() throws GameActionException {
-        if (builtSwarm && robot.getFriendlyArchons().size() > 1 && rc.getRoundNum() < 100) return;
-
-        MapLocation[] swarms = robot.getComms().getSwarms();
-        int swarmCount = 0;
-        for (MapLocation loc : swarms) if (loc != null) ++swarmCount;
-
-        rc.setIndicatorString(swarmCount + " swarms");
-
-        if (swarmCount == BotConstants.NUM_SWARMS) return;
-
-        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
-            if (info.type == RobotType.SOLDIER) {
-                boolean isAlreadyLeader = false;
-                for (MapLocation swarm : swarms) if (info.location.equals(swarm)) {
-                    isAlreadyLeader = true;
-                    break;
-                }
-
-                if (isAlreadyLeader) continue;
-
-                robot.getComms().commandBecomeSwarmLeader(new BecomeSwarmLeader(info.ID, swarmCount));
-                builtSwarm = true;
-                return;
-            }
-        }
     }
 }
