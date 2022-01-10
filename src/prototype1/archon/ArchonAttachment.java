@@ -9,6 +9,7 @@ import prototype1.build.BuildType;
 import prototype1.build.BuildWeightTable;
 import prototype1.comms.BecomeSwarmLeader;
 import prototype1.generic.SymmetryType;
+import prototype1.nav.Navigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +31,14 @@ public class ArchonAttachment extends Attachment {
     private boolean isLead;
 
     private boolean isMapTestSmall;
-    private boolean isMovingAwayFromRubble;
-
+    private boolean isMovingAwayFromRubble = false;
+    private Navigator nav;
+    private MapLocation idealSpot;
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
+
+        this.nav = new Navigator(robot);
+        idealSpot = new MapLocation(rc.getLocation().x,rc.getLocation().y);
         robot.getComms().addFriendlyArchon(rc.getLocation());
         numArchons = rc.getArchonCount();
 
@@ -43,6 +48,12 @@ public class ArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        if(rc.getRoundNum() == 1){
+            moveAway();
+        }
+        if(isMovingAwayFromRubble && rc.getRoundNum() != 1){
+            moveAway();
+        }
         isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
@@ -286,5 +297,59 @@ public class ArchonAttachment extends Attachment {
 
         robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
         lastRushTurn = rc.getRoundNum();
+    }
+    public void moveAway() throws GameActionException{
+       MapLocation[] locs =  rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared);
+       int spot = -1;
+       if(locs.length == 0){
+           isMovingAwayFromRubble = false;
+           return;
+       }
+       if(rc.senseRubble(rc.getLocation()) == 0 && rc.getMode() == RobotMode.TURRET){
+
+           isMovingAwayFromRubble = false;
+           return;
+       }
+       isMovingAwayFromRubble = true;
+       double minRubble = rc.senseRubble(rc.getLocation());
+       for(int i = 0; i < locs.length; i++){
+           double rub = rc.senseRubble(locs[i]) + Math.pow( rc.getLocation().distanceSquaredTo(locs[i]), 0.2);
+           if( (rub + Math.pow(rc.getLocation().distanceSquaredTo(locs[i]), 0.2 ) ) < minRubble){
+               minRubble = rub;
+               spot = i;
+           }
+       }
+       if(spot == -1){
+           if(rc.getMode() == RobotMode.TURRET){
+               isMovingAwayFromRubble = false;
+               return;
+           }
+           if(rc.canTransform()){
+               rc.transform();
+           }
+       } else {
+           idealSpot = locs[spot];
+       }
+            moveToLoc(idealSpot);
+
+    }
+    public void moveToLoc(MapLocation toGo) throws GameActionException{
+        if(rc.getMode() == RobotMode.TURRET){
+            if(rc.canTransform()){
+                rc.transform();
+            }
+            return;
+        }
+        if(rc.getLocation().equals(toGo)){
+            if(rc.getMode() == RobotMode.TURRET){
+                return;
+            }
+            if(rc.canTransform()){
+                rc.transform();
+                isMovingAwayFromRubble = false;
+            }
+            return;
+        }
+        nav.advanceToward(toGo);
     }
 }
