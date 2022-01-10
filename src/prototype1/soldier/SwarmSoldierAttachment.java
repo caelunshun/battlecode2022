@@ -122,7 +122,8 @@ public class SwarmSoldierAttachment extends Attachment {
 
     private void advance() throws GameActionException {
         Direction dir = rc.getLocation().directionTo(closestEnemy.location);
-        if (rc.canMove(dir)) {
+        dir = getOptimalDir(dir);
+        if (dir != null) {
             rc.move(dir);
             rc.setIndicatorString("Advanced " + dir);
         } else {
@@ -132,12 +133,33 @@ public class SwarmSoldierAttachment extends Attachment {
 
     private void retreat() throws GameActionException {
         Direction dir = closestEnemy.location.directionTo(rc.getLocation());
-        if (rc.canMove(dir)) {
+        dir = getOptimalDir(dir);
+        if (dir != null) {
             rc.move(dir);
             rc.setIndicatorString("Retreated " + dir);
         } else {
             rc.setIndicatorString("Failed to Retreat " + dir);
         }
+    }
+
+    private Direction getOptimalDir(Direction ideal) throws GameActionException {
+        Direction best = null;
+        double bestScore = 0;
+        for (Direction dir : Util.DIRECTIONS) {
+            if (!rc.canMove(dir)) continue;
+            double angle = Util.getAngle(dir, ideal);
+            if (angle > Math.PI / 2) {
+                continue;
+            }
+            MapLocation loc = rc.getLocation().add(dir);
+            int rubble = rc.senseRubble(loc);
+            double score = angle / (Math.PI / 2) * 20 + rubble;
+            if (best == null || score < bestScore) {
+                best = dir;
+                bestScore = score;
+            }
+        }
+        return best;
     }
 
     private boolean isOutnumbered() {

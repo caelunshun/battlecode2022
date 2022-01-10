@@ -31,7 +31,7 @@ public class AttackAttachment extends Attachment {
         RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         ArrayList<RobotType> robotTypes = new ArrayList<RobotType>();
         for(int i = 0; i < robots.length; i++){
-            if(isFirstBetter(robots[i].getType(), robots[bestLocation].getType())){
+            if(isFirstBetter(robots[i], robots[bestLocation])){
                 bestLocation = i;
             }
         }
@@ -42,45 +42,48 @@ public class AttackAttachment extends Attachment {
         return false;
 
     }
-    public static boolean isFirstBetter(RobotType first, RobotType second){
+    public static boolean isFirstBetter(RobotInfo first, RobotInfo second){
+        if (first.type == second.type) {
+            return first.health < second.health;
+        }
         //look at this later order is changing
-        if(first == RobotType.SOLDIER){
+        if(first.type == RobotType.SOLDIER){
             return true;
         }
-        if(second == RobotType.SOLDIER){
+        if(second.type == RobotType.SOLDIER){
             return false;
         }
-        if(first == RobotType.ARCHON){
+        if(first.type == RobotType.ARCHON){
             return true;
         }
-        if(second == RobotType.ARCHON){
+        if(second.type == RobotType.ARCHON){
             return false;
         }
-        if(first == RobotType.WATCHTOWER){
+        if(first.type == RobotType.WATCHTOWER){
             return true;
         }
-        if(second == RobotType.WATCHTOWER){
+        if(second.type == RobotType.WATCHTOWER){
             return false;
         }
-        if(first == RobotType.SAGE){
+        if(first.type == RobotType.SAGE){
             return true;
         }
-        if(second == RobotType.SAGE){
+        if(second.type == RobotType.SAGE){
             return false;
         }
-        if(first == RobotType.MINER){
+        if(first.type == RobotType.MINER){
             return true;
         }
-        if(second == RobotType.MINER){
+        if(second.type == RobotType.MINER){
             return false;
         }
-        if(first == RobotType.LABORATORY){
+        if(first.type == RobotType.LABORATORY){
             return true;
         }
-        if(second == RobotType.LABORATORY){
+        if(second.type == RobotType.LABORATORY){
             return false;
         }
-        return true;
 
+        return true;
     }
 }
