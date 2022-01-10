@@ -30,6 +30,7 @@ public class ArchonAttachment extends Attachment {
     private boolean isLead;
 
     private boolean isMapTestSmall;
+    private boolean isMovingAwayFromRubble;
 
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
