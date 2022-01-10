@@ -348,6 +348,7 @@ public class ArchonAttachment extends Attachment {
                 rc.transform();
                 isMovingAwayFromRubble = false;
             }
+            robot.getComms().addFriendlyArchon(rc.getLocation());
             return;
         }
         nav.advanceToward(toGo);
