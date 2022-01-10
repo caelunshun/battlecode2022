@@ -80,7 +80,8 @@ public final class Robot {
     }
 
     private void doTurn() throws GameActionException {
-        for (Attachment attachment : attachments) {
+        for (int i = 0; i < attachments.size(); i++) {
+            Attachment attachment = attachments.get(i);
             attachment.doTurn();
             if (endTurn) {
                 endTurn = false;

@@ -1,5 +1,5 @@
 package prototype1;
 
 public class BotConstants {
-    public static final int DEFENSE_MODE_TURN = 800;
+    public static final int DEFENSE_MODE_TURN = 2022;
 }
