@@ -8,6 +8,7 @@ import prototype1.build.BuildWeightTable;
 import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -200,6 +201,11 @@ public final class Communications {
         writeSlot(SEGMENT_SPOTTED_DANGERS.start + cursor++, enc.finish());
         if (cursor == 4) cursor = 0;
         rc.writeSharedArray(61, cursor);
+    }
+
+    public void clearSpottedDanger(MapLocation loc) throws GameActionException {
+        int index = Arrays.asList(getSpottedDangers()).indexOf(loc);
+        clearSlot(SEGMENT_SPOTTED_DANGERS.start + index);
     }
 
     public SymmetryType getSymmetryType() throws GameActionException {

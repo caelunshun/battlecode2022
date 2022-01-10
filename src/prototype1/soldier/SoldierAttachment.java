@@ -64,6 +64,11 @@ public class SoldierAttachment extends Attachment {
     }
 
     public void moveToLatticePosition() throws GameActionException {
+        if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) > 15 * 15) {
+            nav.advanceToward(robot.getHomeArchon());
+            return;
+        }
+
         if (rc.getLocation().equals(latticeLocation)) {
             rc.setIndicatorString("AT POSITION");
             return;

@@ -60,7 +60,7 @@ public class RobotBuilder {
 
                 break;
             case SOLDIER:
-                if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET) {
+                /*if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET) {
                     robot.addAttachment(new ScoutAttachment(robot, SymmetryType.ROTATIONAL));
                 }
                 if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 1) {
@@ -68,11 +68,10 @@ public class RobotBuilder {
                 }
                 if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 2) {
                     robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
-                }
+                }*/
                 robot.addAttachment(new AttackAttachment(robot));
                 robot.addAttachment(new SwarmSoldierAttachment(robot));
                 robot.addAttachment(new SoldierAttachment(robot));
-                robot.addAttachment(new DispersionAttachment(robot));
                 break;
             case SAGE:
                 robot.addAttachment(new SageAttachment(robot));

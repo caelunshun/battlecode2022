@@ -39,7 +39,9 @@ public final class Navigator {
             }
 
             int dist = target.distanceSquaredTo(location);
-            int rubbleFactor = (int) (robot.getRc().senseRubble(target) * 0.15);
+            int rubble = robot.getRc().senseRubble(target);
+            if (rubble > 50) continue;
+            int rubbleFactor = (int) (rubble * 0.15);
             int score = dist + rubbleFactor;
             if ((score < bestScore || bestDir == null) && robot.getRc().canMove(dir)) {
                 bestDir = dir;

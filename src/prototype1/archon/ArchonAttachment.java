@@ -104,10 +104,8 @@ public class ArchonAttachment extends Attachment {
                 } else {
                     weight = 2;
                 }
-            } else if (rc.getRoundNum() < 200) {
-                weight = 50;
             } else {
-                weight = 30;
+                weight = 50;
             }
             buildWeights.addWeight(BuildType.BUILDER, weight);
         }
@@ -271,6 +269,7 @@ public class ArchonAttachment extends Attachment {
             if (incoming == null) continue;
             if (incoming.distanceSquaredTo(rc.getLocation()) <= 400) {
                 incomingRush = true;
+                robot.getComms().clearSpottedDanger(incoming);
                 break;
             }
         }
@@ -306,11 +305,13 @@ public class ArchonAttachment extends Attachment {
 
     private boolean builtSwarm;
     private void assignSwarmLeaders() throws GameActionException {
-        if (builtSwarm && robot.getFriendlyArchons().size() > 1) return;
+        if (builtSwarm && robot.getFriendlyArchons().size() > 1 && rc.getRoundNum() < 100) return;
 
         MapLocation[] swarms = robot.getComms().getSwarms();
         int swarmCount = 0;
         for (MapLocation loc : swarms) if (loc != null) ++swarmCount;
+
+        rc.setIndicatorString(swarmCount + " swarms");
 
         if (swarmCount == BotConstants.NUM_SWARMS) return;
 

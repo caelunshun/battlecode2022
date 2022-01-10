@@ -1,9 +1,6 @@
 package prototype1.soldier;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.BotConstants;
 import prototype1.Robot;
@@ -48,17 +45,24 @@ public class SwarmSoldierAttachment extends Attachment {
         swarmLocation = robot.getComms().getSwarms()[swarmIndex];
 
         if (isLeader) {
+            robot.getComms().setSwarmLocation(swarmIndex, rc.getLocation());
+            int swarmSize = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam()).length;
+            rc.setIndicatorString("Swarm Leader - " + swarmIndex + " - size = " + swarmSize);
+
             if (isGoingToDie()) {
                 appointNewLeader();
             }
-            leaderMoveSwarm();
-            MapLocation swarmLocation = rc.getLocation();
-            robot.getComms().setSwarmLocation(swarmIndex, swarmLocation);
-            rc.setIndicatorString("Swarm Leader - " + swarmIndex + " (Target: " + swarmLocation + " )");
+
+            if (!doMicroMovements()) {
+                if (swarmSize >= 4) {
+                    doLeaderMacroMovement();
+                }
+            }
         } else {
-            doMicroMovements();
-            nav.advanceToward(swarmLocation);
             rc.setIndicatorString("Swarm " + swarmIndex);
+            if (!doMicroMovements()) {
+                nav.advanceToward(swarmLocation);
+            }
         }
 
         robot.endTurn();
@@ -71,6 +75,8 @@ public class SwarmSoldierAttachment extends Attachment {
     private void appointNewLeader() throws GameActionException {
         RobotInfo bestCandidate = null;
         for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
+            if (info.health < 25) continue;
+            if (info.type != RobotType.SOLDIER) continue;
             if (bestCandidate == null || info.health > bestCandidate.health) {
                 bestCandidate = info;
             }
@@ -79,9 +85,11 @@ public class SwarmSoldierAttachment extends Attachment {
         if (bestCandidate != null) {
             robot.getComms().commandBecomeSwarmLeader(new BecomeSwarmLeader(bestCandidate.ID, swarmIndex));
             isLeader = false;
+            rc.setIndicatorString("Delegating Swarm Leadership");
         } else {
             // Swarm is gone... RIP.
             robot.getComms().clearSwarm(swarmIndex);
+            rc.setIndicatorString("Swarm has died. RIP");
         }
     }
 
@@ -113,129 +121,90 @@ public class SwarmSoldierAttachment extends Attachment {
         return swarmIndex != -1;
     }
 
-    private MapLocation leaderTarget;
-    private MapLocation attackingArchon;
+    int retreatTurns = 0;
+    double retreatX;
+    double retreatY;
 
-    private void leaderMoveSwarm() throws GameActionException {
-        if (robot.isAnyArchonInDanger()) {
-            MapLocation danger = null;
-            for (MapLocation loc : robot.getFriendlyArchons()) {
-                if (robot.isArchonInDanger(loc)) {
-                    if (danger == null || loc.distanceSquaredTo(rc.getLocation()) < danger.distanceSquaredTo(rc.getLocation())) {
-                        danger = loc;
-                    }
-                    if (loc.equals(robot.getHomeArchon())) {
-                        danger = loc;
-                        break;
-                    }
+    private boolean doMicroMovements() throws GameActionException {
+        int enemyDamage = 0;
+        MapLocation closestPrey = null;
+
+        double vx = 0;
+        double vy = 0;
+
+        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
+            if (info.type.canAttack() || info.type == RobotType.ARCHON) {
+                if (info.type.damage > 0) {
+                    enemyDamage += info.type.damage;
                 }
-            }
 
-            if (danger != null) {
-                nav.advanceToward(danger);
-                return;
-            }
-        }
-
-        if (leaderTarget == null
-                || !isValidLeaderTarget(leaderTarget)) leaderTarget = findLeaderTarget();
-
-        senseRushingArchon();
-        doLeaderMicroMovements();
-
-        if (!rc.isMovementReady()) return;
-
-        if (attackingArchon != null) {
-            nav.advanceToward(attackingArchon);
-        } else if (leaderTarget != null) {
-            nav.advanceToward(leaderTarget);
-        }
-    }
-
-    private void senseRushingArchon() {
-        if (!robot.getEnemyArchons().contains(attackingArchon)) attackingArchon = null;
-
-        for (MapLocation enemy : robot.getEnemyArchons()) {
-            if (enemy.distanceSquaredTo(rc.getLocation()) < 10) {
-                attackingArchon = enemy;
-                break;
-            }
-        }
-    }
-
-    private void doLeaderMicroMovements() throws GameActionException {
-        if (!rc.isMovementReady()) return;
-
-        int swarmSize = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam()).length;
-
-        double vx = 0, vy = 0;
-        int enemySize = 0;
-        MapLocation enemyPos = new MapLocation(0, 0);
-        for (RobotInfo enemy : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
-            if (enemy.type.canAttack()) {
-                ++enemySize;
-                double dx = rc.getLocation().x - enemy.location.x;
-                double dy = rc.getLocation().y - enemy.location.y;
-                double len = Math.hypot(dx, dy);
+                double dx = rc.getLocation().x - info.location.x;
+                double dy = rc.getLocation().y - info.location.y;
+                double len = Math.hypot(dy, dx);
                 dx /= len;
                 dy /= len;
                 vx += dx;
                 vy += dy;
-                enemyPos = enemyPos.translate(enemy.location.x, enemy.location.y);
-            }
-        }
-
-        if (swarmSize * 0.7 < enemySize) {
-            attackingArchon = null;
-            double theta = Math.atan2(vy, vx);
-            double x = Math.cos(theta) * 10;
-            double y = Math.sin(theta) * 10;
-            badTargets.add(leaderTarget);
-            leaderTarget = rc.getLocation().translate((int) x, (int) y);
-        } else if (enemySize > 0) {
-            leaderTarget = new MapLocation(enemyPos.x / enemySize, enemyPos.y / enemySize);
-        }
-    }
-
-    private List<MapLocation> badTargets = new ArrayList<>();
-
-    private MapLocation findLeaderTarget() {
-        for (MapLocation enemy : robot.getEnemyArchons()) {
-            if (isValidLeaderTarget(enemy)) {
-                return enemy;
-            }
-        }
-
-        for (MapLocation friendly : robot.getFriendlyArchons()) {
-            for (SymmetryType symmetry : SymmetryType.values()) {
-                MapLocation loc = symmetry.getSymmetryLocation(friendly, rc);
-                if (isValidLeaderTarget(loc)) {
-                    return loc;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private boolean isValidLeaderTarget(MapLocation loc) {
-        return loc.distanceSquaredTo(rc.getLocation()) > 15 && !badTargets.contains(loc);
-    }
-
-    private void doMicroMovements() throws GameActionException {
-        int enemyDamage = 0;
-        MapLocation closestPrey = null;
-        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
-            if (info.type.canAttack()) {
-                enemyDamage += info.type.damage;
             } else if (closestPrey == null
                 || rc.getLocation().distanceSquaredTo(closestPrey) > rc.getLocation().distanceSquaredTo(info.location)){
                 closestPrey = info.location;
             }
         }
 
-        if (enemyDamage < 6 && closestPrey != null) {
-            nav.advanceToward(closestPrey);
+        int ourDamage = 0;
+        for (RobotInfo info : rc.senseNearbyRobots(8, rc.getTeam())) {
+            if (info.type.canAttack()) {
+                ourDamage += info.type.damage;
+            }
+        }
+
+        --retreatTurns;
+        if (ourDamage >= enemyDamage * 2 && retreatTurns <= 0) {
+            if (closestPrey != null) {
+                nav.advanceToward(closestPrey);
+                return true;
+            }
+        } else {
+            // Retreat.
+            rc.setIndicatorString("Retreating - " + vy + ", " + vx);
+            if (vx == 0 && vy == 0) {
+                vx = retreatX;
+                vy = retreatY;
+            }
+            Direction dir = Util.bestPossibleDirection(Util.getDirFromAngle(Math.atan2(vy, vx)), rc);
+
+            if (rushingArchon != null) {
+                dangerArchons.add(rushingArchon);
+                rushingArchon = null;
+            }
+
+            if (dir != null && rc.canMove(dir)) {
+                rc.move(dir);
+                return true;
+            }
+
+            retreatTurns = 10;
+            retreatX = vx;
+            retreatY = vy;
+        }
+        return false;
+    }
+
+    private MapLocation rushingArchon;
+    private List<MapLocation> dangerArchons = new ArrayList<>();
+
+    private void doLeaderMacroMovement() throws GameActionException {
+        for (MapLocation enemy : robot.getEnemyArchons()) {
+            if (enemy.distanceSquaredTo(rc.getLocation()) < 12 * 12 && !dangerArchons.contains(enemy)) {
+                rushingArchon = enemy;
+                break;
+            }
+        }
+
+        if (rushingArchon != null) {
+            nav.advanceToward(rushingArchon);
+        } else if (rc.getRoundNum() % 2 == 0) {
+            robot.moveRandom();
         }
     }
 }
