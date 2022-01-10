@@ -70,7 +70,7 @@ public class MinerAttachment extends Attachment {
                 rc.mineGold(loc);
                 rc.setIndicatorString("Mined gold");
             }
-            while (rc.senseLead(loc) > 1 && rc.canMineLead(loc)) {
+            while ((rc.senseLead(loc) >1 || closerToEnemy()) && rc.canMineLead(loc)) {
                 rc.mineLead(loc);
                 rc.setIndicatorString("Mined lead");
             }
@@ -108,6 +108,32 @@ public class MinerAttachment extends Attachment {
 
         if (bestLead != null) {
             nav.advanceToward(bestLead);
+            return true;
+        }
+        return false;
+    }
+    public boolean closerToEnemy(){
+       List<MapLocation> enemy = robot.getEnemyArchons();
+       List<MapLocation> teamArchon = robot.getFriendlyArchons();
+       if(enemy.size() == 0){
+           return false;
+       }
+       int minDistance =  rc.getLocation().distanceSquaredTo(enemy.get(0));
+       int minDistanceTeam = rc.getLocation().distanceSquaredTo(teamArchon.get(0));
+       for(int i = 0; i < enemy.size(); i++){
+           int dist = rc.getLocation().distanceSquaredTo(enemy.get(i));
+           if(dist < minDistance){
+               minDistance = dist;
+           }
+       }
+
+        for(int i = 0; i < teamArchon.size(); i++){
+            int dist = rc.getLocation().distanceSquaredTo(teamArchon.get(i));
+            if(dist < minDistanceTeam){
+                minDistanceTeam = dist;
+            }
+        }
+        if(minDistance < minDistanceTeam){
             return true;
         }
         return false;
