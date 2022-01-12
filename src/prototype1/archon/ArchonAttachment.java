@@ -54,6 +54,7 @@ public class ArchonAttachment extends Attachment {
         if(isMovingAwayFromRubble && rc.getRoundNum() != 1){
             moveAway();
         }
+
         isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
@@ -63,7 +64,7 @@ public class ArchonAttachment extends Attachment {
             rc.setIndicatorString("Symmetry Unknown");
         }
 
-        incrementBuildWeights();;
+        incrementBuildWeights();
         if (rc.getRoundNum() < tiebreakerRound) {
             build();
         } else {
@@ -71,10 +72,6 @@ public class ArchonAttachment extends Attachment {
         }
         repair();
         computeSymmetry();
-
-        if (rc.getRoundNum() == 2) {
-            initialFriendlyArchons.addAll(robot.getFriendlyArchons());
-        }
 
         if (rc.getRoundNum() == 2) {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
@@ -305,7 +302,7 @@ public class ArchonAttachment extends Attachment {
            isMovingAwayFromRubble = false;
            return;
        }
-       if(rc.senseRubble(rc.getLocation()) == 0 && rc.getMode() == RobotMode.TURRET){
+       if(rc.senseRubble(rc.getLocation()) < 50 && rc.getMode() == RobotMode.TURRET){
 
            isMovingAwayFromRubble = false;
            return;
