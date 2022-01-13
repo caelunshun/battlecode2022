@@ -36,6 +36,7 @@ public final class Communications {
     private static final int ARCHON_DANGER = 8;
     private static final int RUSHING_ARCHON = 9;
     private static final Range SEGMENT_CRIES_FOR_HELP = new Range(10, 14);
+    private static final int RAY_DISPERSION = 14;
 
     public Communications(RobotController rc) {
         this.rc = rc;
