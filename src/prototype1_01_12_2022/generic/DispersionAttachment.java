@@ -1,11 +1,11 @@
-package prototype1.generic;
+package prototype1_01_12_2022.generic;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
+import prototype1_01_12_2022.Attachment;
+import prototype1_01_12_2022.Robot;
+import prototype1_01_12_2022.Util;
 
 public class DispersionAttachment extends Attachment {
     private double theta;
@@ -42,7 +42,7 @@ public class DispersionAttachment extends Attachment {
         }
 
         MapLocation loc = rc.getLocation().add(dir);
-        if (rc.senseRubble(loc) >= 60) {
+        if (rc.senseRubble(loc) >= 40) {
             return false;
         }
 

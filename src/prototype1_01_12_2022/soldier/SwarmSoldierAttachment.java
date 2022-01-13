@@ -1,12 +1,12 @@
-package prototype1.soldier;
+package prototype1_01_12_2022.soldier;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.comms.CryForHelp;
-import prototype1.generic.DispersionAttachment;
-import prototype1.nav.Navigator;
+import prototype1_01_12_2022.Attachment;
+import prototype1_01_12_2022.Robot;
+import prototype1_01_12_2022.Util;
+import prototype1_01_12_2022.comms.CryForHelp;
+import prototype1_01_12_2022.generic.DispersionAttachment;
+import prototype1_01_12_2022.nav.Navigator;
 
 import java.util.Arrays;
 
@@ -102,7 +102,7 @@ public class SwarmSoldierAttachment extends Attachment {
         // the closest enemy, while avoiding all other enemies.
         // HOWEVER: if we're outnumbered, then we issue a cry
         // for help instead, then retreat.
-        if (isOutnumbered() && !isDefendingArchon()) {
+        if (isOutnumbered()) {
             issueCryForHelp();
             retreat();
             rc.setIndicatorString("Outnumbered from " + closestEnemy.location);
@@ -113,15 +113,6 @@ public class SwarmSoldierAttachment extends Attachment {
                 advance(); // get close enough to shoot
             }
         }
-    }
-
-    private boolean isDefendingArchon() {
-        for (MapLocation loc : robot.getFriendlyArchons()) {
-            if (loc.distanceSquaredTo(rc.getLocation()) <= 25) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void issueCryForHelp() throws GameActionException {

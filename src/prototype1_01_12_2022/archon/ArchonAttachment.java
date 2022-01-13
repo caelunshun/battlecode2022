@@ -1,15 +1,15 @@
-package prototype1.archon;
+package prototype1_01_12_2022.archon;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.BotConstants;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.build.BuildType;
-import prototype1.build.BuildWeightTable;
-import prototype1.comms.BecomeSwarmLeader;
-import prototype1.generic.SymmetryType;
-import prototype1.nav.Navigator;
+import prototype1_01_12_2022.Attachment;
+import prototype1_01_12_2022.BotConstants;
+import prototype1_01_12_2022.Robot;
+import prototype1_01_12_2022.Util;
+import prototype1_01_12_2022.build.BuildType;
+import prototype1_01_12_2022.build.BuildWeightTable;
+import prototype1_01_12_2022.comms.BecomeSwarmLeader;
+import prototype1_01_12_2022.generic.SymmetryType;
+import prototype1_01_12_2022.nav.Navigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,12 +48,12 @@ public class ArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        /*if(rc.getRoundNum() == 1){
+        if(rc.getRoundNum() == 1){
             moveAway();
         }
         if(isMovingAwayFromRubble && rc.getRoundNum() != 1){
             moveAway();
-        }*/
+        }
 
         isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
@@ -119,7 +119,7 @@ public class ArchonAttachment extends Attachment {
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1 && !isInDanger) {
             // No need to balance builds if we have tons of lead.
-            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2) {
+            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000) {
                 return;
             }
         }
