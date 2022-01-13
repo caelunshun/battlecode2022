@@ -58,11 +58,6 @@ public class ArchonAttachment extends Attachment {
         isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
-        if (robot.getComms().getSymmetryType() != null) {
-            rc.setIndicatorString("Symmetry: " + robot.getComms().getSymmetryType());
-        } else {
-            rc.setIndicatorString("Symmetry Unknown");
-        }
 
         incrementBuildWeights();
         if (rc.getRoundNum() < tiebreakerRound) {
@@ -94,7 +89,7 @@ public class ArchonAttachment extends Attachment {
             buildWeights.addWeight(BuildType.MINER, 5);
         }
 
-        if (robot.isAnyArchonInDanger()) {
+        if (isInDanger()) {
             buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 200);
         } else if (rc.getRoundNum() >= 60) {
             buildWeights.addWeight(BuildType.SOLDIER, 30);
@@ -226,8 +221,6 @@ public class ArchonAttachment extends Attachment {
                 // Multiple possible symmetry types, but they all work,
                 // as we know the entire map.
                 robot.getComms().setSymmetryType(possibleSymmetry.get(0));
-            } else {
-                rc.setIndicatorString("SU: " + possibleSymmetry);
             }
         }
 
