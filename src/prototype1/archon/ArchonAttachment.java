@@ -161,14 +161,15 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
     private Direction getAvailableBuildDirection() throws GameActionException {
         Direction[] list = Arrays.copyOf(Util.DIRECTIONS, Util.DIRECTIONS.length);
         Util.shuffle(list);
-        int score = 100000;
         //lower score is better
         Direction bestDir = Direction.CENTER;
         for (int i = 0; i < list.length; i++) {
-            int testScore = (- 5 * rc.senseNearbyLocationsWithLead(rc.getLocation().add(list[i]), RobotType.MINER.visionRadiusSquared).length + (int) Math.sqrt(rc.getLocation().distanceSquaredTo(Util.getCenterLocation(rc))) + (int) (.3 * rc.senseRubble(rc.getLocation().add(list[i]))));
-            if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null && testScore < score ) {
+            int testScore = rc.senseRubble(rc.getLocation().add(list[i]));
+            if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null ) {
+                if(testScore < 40){
+                    return list[i];
+                }
                 bestDir = list[i];
-                score = testScore;
             }
         }
         return bestDir;
