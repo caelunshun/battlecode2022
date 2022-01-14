@@ -13,7 +13,7 @@ import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
 import prototype1.soldier.SoldierAttachment;
 import prototype1.soldier.SwarmSoldierAttachment;
-import prototype1.watchtower.SageAttachment;
+import prototype1.sage.SageAttachment;
 import prototype1.watchtower.WatchtowerAttachment;
 
 public class RobotBuilder {

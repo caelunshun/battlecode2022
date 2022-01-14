@@ -1,4 +1,4 @@
-package prototype1.watchtower;
+package prototype1.sage;
 
 import battlecode.common.*;
 import prototype1.Attachment;

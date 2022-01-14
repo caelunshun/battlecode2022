@@ -117,7 +117,7 @@ public class ArchonAttachment extends Attachment {
 
     private void build() throws GameActionException {
         int currentBuildIndex = robot.getComms().getBuildIndex();
-        if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1 && !isInDanger) {
+        if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1 && !isInDanger) {
             // No need to balance builds if we have tons of lead.
             if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2) {
                 return;

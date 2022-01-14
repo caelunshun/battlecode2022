@@ -150,7 +150,7 @@ public class MinerAttachment extends Attachment {
             MapLocation[] locs = robot.getComms().getLeadLocations();
             for (int i = 0; i < locs.length; i++) {
                 MapLocation loc = locs[i];
-                if (loc != null) {
+                if (loc != null && Math.sqrt(rc.getLocation().distanceSquaredTo(loc)) <= 20) {
                     farTarget = loc;
                     robot.getComms().clearLeadLocation(i);
                     break;
@@ -160,6 +160,8 @@ public class MinerAttachment extends Attachment {
 
         if (farTarget != null) {
             nav.advanceToward(farTarget);
+            rc.setIndicatorLine(rc.getLocation(), farTarget, 255, 255, 255);
+            rc.setIndicatorString("Following far target");
             return true;
         }
 

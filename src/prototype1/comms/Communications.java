@@ -205,6 +205,7 @@ public final class Communications {
     public MapLocation[] getLeadLocations() throws GameActionException {
         MapLocation[] res = new MapLocation[5];
         for (int i = SEGMENT_LEAD_LOCATIONS.start; i < SEGMENT_LEAD_LOCATIONS.end; i++) {
+            if (isSlotFree(i)) continue;
             BitDecoder dec = new BitDecoder(readSlot(i));
             res[i - SEGMENT_LEAD_LOCATIONS.start] = dec.readMapLocation();
         }
