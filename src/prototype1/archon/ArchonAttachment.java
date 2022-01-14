@@ -116,7 +116,9 @@ public class ArchonAttachment extends Attachment {
     }
 
     private void build() throws GameActionException {
-
+if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
+    tryBuild(RobotType.SAGE);
+}
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1 && !isInDanger) {
             // No need to balance builds if we have tons of lead.
@@ -159,12 +161,17 @@ public class ArchonAttachment extends Attachment {
     private Direction getAvailableBuildDirection() throws GameActionException {
         Direction[] list = Arrays.copyOf(Util.DIRECTIONS, Util.DIRECTIONS.length);
         Util.shuffle(list);
-        for (Direction dir : list) {
-            if (rc.senseRobotAtLocation(rc.getLocation().add(dir)) == null) {
-                return dir;
+        int score = 100000;
+        //lower score is better
+        Direction bestDir = Direction.CENTER;
+        for (int i = 0; i < list.length; i++) {
+            int testScore = (- 5 * rc.senseNearbyLocationsWithLead(rc.getLocation().add(list[i]), RobotType.MINER.visionRadiusSquared).length + (int) Math.sqrt(rc.getLocation().distanceSquaredTo(Util.getCenterLocation(rc))) + (int) (.3 * rc.senseRubble(rc.getLocation().add(list[i]))));
+            if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null && testScore < score ) {
+                bestDir = list[i];
+                score = testScore;
             }
         }
-        return Direction.CENTER;
+        return bestDir;
     }
 
     private void repair() throws GameActionException {
