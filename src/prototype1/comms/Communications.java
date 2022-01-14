@@ -10,6 +10,7 @@ import prototype1.generic.SymmetryType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Handles communications via the shared array.
@@ -37,6 +38,7 @@ public final class Communications {
     private static final int RUSHING_ARCHON = 9;
     private static final Range SEGMENT_CRIES_FOR_HELP = new Range(10, 14);
     private static final int RAY_DISPERSION = 14;
+    private static final Range SEGMENT_LEAD_LOCATIONS = new Range(15, 20);
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -198,6 +200,38 @@ public final class Communications {
 
     public void setBuildIndex(int index) throws GameActionException {
         rc.writeSharedArray(63, index);
+    }
+
+    public MapLocation[] getLeadLocations() throws GameActionException {
+        MapLocation[] res = new MapLocation[5];
+        for (int i = SEGMENT_LEAD_LOCATIONS.start; i < SEGMENT_LEAD_LOCATIONS.end; i++) {
+            BitDecoder dec = new BitDecoder(readSlot(i));
+            res[i - SEGMENT_LEAD_LOCATIONS.start] = dec.readMapLocation();
+        }
+        return res;
+    }
+
+    public void clearLeadLocation(int index) throws GameActionException {
+        clearSlot(SEGMENT_LEAD_LOCATIONS.start + index);
+    }
+
+    public void addLeadLocation(MapLocation loc) throws GameActionException {
+        MapLocation[] locs = getLeadLocations();
+        int index = -1;
+        for (int i = 0; i < locs.length; i++) {
+            if (locs[i] == null) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            index = new Random(33).nextInt(5);
+        }
+
+        BitEncoder enc = new BitEncoder();
+        enc.writeMapLocation(loc);
+        writeSlot(SEGMENT_LEAD_LOCATIONS.start + index, enc.finish());
     }
 
     private int getFreeSlot(Range segment) throws GameActionException {

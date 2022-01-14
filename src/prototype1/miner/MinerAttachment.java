@@ -24,7 +24,7 @@ public class MinerAttachment extends Attachment {
             return;
         };
         mine();
-        if (moveTowardCloseLead()) {
+        if (moveTowardCloseLead() || moveTowardFarLead()) {
             robot.endTurn();
         }
     }
@@ -136,6 +136,33 @@ public class MinerAttachment extends Attachment {
         if(minDistance < minDistanceTeam){
             return true;
         }
+        return false;
+    }
+
+    private MapLocation farTarget;
+
+    private boolean moveTowardFarLead() throws GameActionException {
+        if (farTarget != null && rc.getLocation().distanceSquaredTo(farTarget) <= rc.getType().visionRadiusSquared) {
+            farTarget = null;
+        }
+
+        if (farTarget == null) {
+            MapLocation[] locs = robot.getComms().getLeadLocations();
+            for (int i = 0; i < locs.length; i++) {
+                MapLocation loc = locs[i];
+                if (loc != null) {
+                    farTarget = loc;
+                    robot.getComms().clearLeadLocation(i);
+                    break;
+                }
+            }
+        }
+
+        if (farTarget != null) {
+            nav.advanceToward(farTarget);
+            return true;
+        }
+
         return false;
     }
 }

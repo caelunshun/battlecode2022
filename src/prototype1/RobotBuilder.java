@@ -71,6 +71,7 @@ public class RobotBuilder {
                 robot.addAttachment(new AttackAttachment(robot));
                 robot.addAttachment(new SwarmSoldierAttachment(robot));
                 robot.addAttachment(new AttackAttachment(robot));
+                robot.addAttachment(new LeadSpotterAttachment(robot));
                 break;
             case SAGE:
                 robot.addAttachment(new SageAttachment(robot));
