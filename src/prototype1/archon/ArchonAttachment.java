@@ -83,10 +83,15 @@ public class ArchonAttachment extends Attachment {
 
     private void incrementBuildWeights() throws GameActionException {
         // Increment the weights in the build table based on priorities.
-        if (rc.getRoundNum() < 100) {
-            buildWeights.addWeight(BuildType.MINER, 60);
+        if (rc.getRoundNum() < 60) {
+            if ((rc.getMapHeight() * rc.getMapWidth()) < 1800){
+                buildWeights.addWeight(prototype1.build.BuildType.MINER, 40);
+                buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+            } else {
+                buildWeights.addWeight(prototype1.build.BuildType.MINER, 60);
+            }
         } else {
-            buildWeights.addWeight(BuildType.MINER, 5);
+            buildWeights.addWeight(prototype1.build.BuildType.MINER, 5);
         }
 
         if (isInDanger()) {

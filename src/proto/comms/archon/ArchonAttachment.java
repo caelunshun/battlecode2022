@@ -1,14 +1,17 @@
-package prototype1_01_06_2022.archon;
+package proto.comms.archon;
 
 import battlecode.common.*;
-import prototype1_01_06_2022.Attachment;
-import prototype1_01_06_2022.Robot;
-import prototype1_01_06_2022.Util;
-import prototype1_01_06_2022.build.BuildType;
-import prototype1_01_06_2022.build.BuildWeightTable;
-import prototype1_01_06_2022.generic.SymmetryType;
+import proto.comms.Attachment;
+import proto.comms.BotConstants;
+import proto.comms.Robot;
+import proto.comms.Util;
+import proto.comms.build.BuildType;
+import proto.comms.build.BuildWeightTable;
+import proto.comms.generic.SymmetryType;
+import proto.comms.nav.Navigator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ArchonAttachment extends Attachment {
@@ -20,18 +23,37 @@ public class ArchonAttachment extends Attachment {
 
     private boolean isInDanger = false;
 
-    public static final int tiebreakerRound = 1500;
+    public static final int tiebreakerRound = 1850;
 
     private BuildWeightTable buildWeights = new BuildWeightTable();
 
+    private boolean isLead;
+
+    private boolean isMapTestSmall;
+    private boolean isMovingAwayFromRubble = false;
+    private Navigator nav;
+    private MapLocation idealSpot;
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
+
+        this.nav = new Navigator(robot);
+        idealSpot = new MapLocation(rc.getLocation().x,rc.getLocation().y);
         robot.getComms().addFriendlyArchon(rc.getLocation());
         numArchons = rc.getArchonCount();
+
+        isMapTestSmall = rc.senseNearbyLocationsWithLead(rc.getType().visionRadiusSquared).length
+                > 40;
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        if(rc.getRoundNum() == 1){
+            moveAway();
+        }
+        if(isMovingAwayFromRubble && rc.getRoundNum() != 1){
+            moveAway();
+        }
+        isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
         if (robot.getComms().getSymmetryType() != null) {
@@ -56,11 +78,11 @@ public class ArchonAttachment extends Attachment {
         if (rc.getRoundNum() == 2) {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
         }
-        initiateRush();
 
-        if (robot.getComms().getRushingArchon() != null) {
-            rc.setIndicatorString("Rushing " + robot.getComms().getRushingArchon());
+        if (isLead) {
+            initiateRush();
         }
+
         if (isInDanger) {
             rc.setIndicatorString("In Danger");
         }
@@ -68,31 +90,40 @@ public class ArchonAttachment extends Attachment {
 
     private void incrementBuildWeights() throws GameActionException {
         // Increment the weights in the build table based on priorities.
-        if (rc.getRoundNum() < 200) {
+        if (rc.getRoundNum() < 100) {
             buildWeights.addWeight(BuildType.MINER, 60);
         } else {
             buildWeights.addWeight(BuildType.MINER, 5);
         }
 
         if (robot.isAnyArchonInDanger()) {
-            buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 100);
-        } else {
-            buildWeights.addWeight(BuildType.SOLDIER, 20);
+            buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 200);
+        } else if (rc.getRoundNum() >= 60) {
+            buildWeights.addWeight(BuildType.SOLDIER, 30);
         }
 
-        if (rc.getRoundNum() < 200) {
-            buildWeights.addWeight(BuildType.BUILDER, 1);
-        }
-
-        if (rc.getRoundNum() > tiebreakerRound) {
-            buildWeights.addWeight(BuildType.BUILDER, 20);
+        if (rc.getRoundNum() > BotConstants.DEFENSE_MODE_TURN) {
+            int weight;
+            if (isMapTestSmall) {
+                if (rc.getTeamLeadAmount(rc.getTeam()) > 1000) {
+                    weight = 5;
+                } else {
+                    weight = 2;
+                }
+            } else {
+                weight = 50;
+            }
+            buildWeights.addWeight(BuildType.BUILDER, weight);
         }
     }
 
     private void build() throws GameActionException {
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < robot.getFriendlyArchons().size() - 1 && !isInDanger) {
-            return;
+            // No need to balance builds if we have tons of lead.
+            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000) {
+                return;
+            }
         }
 
         BuildType buildType = buildWeights.getHighestWeight();
@@ -108,6 +139,11 @@ public class ArchonAttachment extends Attachment {
             robot.getComms().setBuildIndex(currentBuildIndex);
             lastBuiltIndex = currentBuildIndex;
             buildWeights.clearWeight(buildType);
+
+            if (robot.getFriendlyArchons().size() == 1) {
+                // We can build again if we have more lead.
+                build();
+            }
         }
     }
 
@@ -122,7 +158,9 @@ public class ArchonAttachment extends Attachment {
     }
 
     private Direction getAvailableBuildDirection() throws GameActionException {
-        for (Direction dir : Util.DIRECTIONS) {
+        Direction[] list = Arrays.copyOf(Util.DIRECTIONS, Util.DIRECTIONS.length);
+        Util.shuffle(list);
+        for (Direction dir : list) {
             if (rc.senseRobotAtLocation(rc.getLocation().add(dir)) == null) {
                 return dir;
             }
@@ -171,7 +209,6 @@ public class ArchonAttachment extends Attachment {
                 for (MapLocation ourLoc : initialFriendlyArchons) {
                     if (usedReflections.contains(ourLoc)) continue;
                     if (symmetry.getSymmetryLocation(ourLoc, rc).equals(enemyLoc)) {
-                        System.out.println(symmetry + ", " + ourLoc + ", E: " + enemyLoc);
                         works = true;
                         usedReflections.add(ourLoc);
                         break;
@@ -216,11 +253,12 @@ public class ArchonAttachment extends Attachment {
         }
     }
 
+    int inDangerTurns = 0;
     private boolean isInDanger() throws GameActionException {
         // Check if the total health of nearby enemy robots (that can attack)
         // is greater than the total health of our nearby robots (that can attack).
-        int ourHealth = 0;
-        int enemyHealth = 0;
+        double ourHealth = 0;
+        double enemyHealth = 0;
         for (RobotInfo info : rc.senseNearbyRobots()) {
             if (info.ID == rc.getID()) continue;
             if (info.type.canAttack()) {
@@ -232,28 +270,86 @@ public class ArchonAttachment extends Attachment {
             }
         }
 
-        return enemyHealth > ourHealth;
+        boolean inDanger = enemyHealth * 1.6 > ourHealth;
+
+        if (inDanger) inDangerTurns = 20;
+        if (inDangerTurns-- > 0) {
+            inDanger = true;
+        }
+        return inDanger;
     }
 
+    int lastRushTurn = -1;
     private void initiateRush() throws GameActionException {
-        if (isInDanger) {
-            robot.getComms().setRushingArchon(null);
+        // robot.getComms().setRushingArchon(null);
+
+        if (rc.getRoundNum() < 1200) {
             return;
         }
 
-        if (rc.getRoundNum() < 200) {
+        if (rc.getRoundNum() - lastRushTurn < 200) {
             return;
         }
-
-        if (robot.getComms().getRushingArchon() != null && !robot.getEnemyArchons().contains(robot.getComms().getRushingArchon())) {
-            robot.getComms().setRushingArchon(null);
-            return;
-        }
-
-        if (robot.getComms().getRushingArchon() != null) return;
+        rc.setIndicatorString(robot.getEnemyArchons().toString());
 
         if (robot.getEnemyArchons().isEmpty()) return;
 
         robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
+        lastRushTurn = rc.getRoundNum();
+    }
+    public void moveAway() throws GameActionException{
+       MapLocation[] locs =  rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared);
+       int spot = -1;
+       if(locs.length == 0){
+           isMovingAwayFromRubble = false;
+           return;
+       }
+       if(rc.senseRubble(rc.getLocation()) == 0 && rc.getMode() == RobotMode.TURRET){
+
+           isMovingAwayFromRubble = false;
+           return;
+       }
+       isMovingAwayFromRubble = true;
+       double minRubble = rc.senseRubble(rc.getLocation());
+       for(int i = 0; i < locs.length; i++){
+           double rub = rc.senseRubble(locs[i]) + Math.pow( rc.getLocation().distanceSquaredTo(locs[i]), 0.2);
+           if( (rub + Math.pow(rc.getLocation().distanceSquaredTo(locs[i]), 0.2 ) ) < minRubble){
+               minRubble = rub;
+               spot = i;
+           }
+       }
+       if(spot == -1){
+           if(rc.getMode() == RobotMode.TURRET){
+               isMovingAwayFromRubble = false;
+               return;
+           }
+           if(rc.canTransform()){
+               rc.transform();
+           }
+       } else {
+           idealSpot = locs[spot];
+       }
+            moveToLoc(idealSpot);
+
+    }
+    public void moveToLoc(MapLocation toGo) throws GameActionException{
+        if(rc.getMode() == RobotMode.TURRET){
+            if(rc.canTransform()){
+                rc.transform();
+            }
+            return;
+        }
+        if(rc.getLocation().equals(toGo)){
+            if(rc.getMode() == RobotMode.TURRET){
+                return;
+            }
+            if(rc.canTransform()){
+                rc.transform();
+                isMovingAwayFromRubble = false;
+            }
+            robot.getComms().addFriendlyArchon(rc.getLocation());
+            return;
+        }
+        nav.advanceToward(toGo);
     }
 }
