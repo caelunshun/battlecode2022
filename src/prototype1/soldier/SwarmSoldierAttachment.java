@@ -112,6 +112,12 @@ public class SwarmSoldierAttachment extends Attachment {
             } else if (rc.getLocation().distanceSquaredTo(closestEnemy.location) > rc.getType().actionRadiusSquared) {
                 advance(); // get close enough to shoot
             }
+
+            // If we're attacking the archon, issue a cry for more soldiers.
+            if (Util.getClosest(rc.getLocation(), robot.getEnemyArchons()).distanceSquaredTo(rc.getLocation())
+                <= rc.getType().actionRadiusSquared) {
+                issueCryForHelp();
+            }
         }
     }
 
