@@ -1,15 +1,15 @@
-package prototype1.archon;
+package prototype1_01_14_2022.archon;
 
 import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.BotConstants;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.build.BuildType;
-import prototype1.build.BuildWeightTable;
-import prototype1.comms.BecomeSwarmLeader;
-import prototype1.generic.SymmetryType;
-import prototype1.nav.Navigator;
+import prototype1_01_14_2022.Attachment;
+import prototype1_01_14_2022.BotConstants;
+import prototype1_01_14_2022.Robot;
+import prototype1_01_14_2022.Util;
+import prototype1_01_14_2022.build.BuildType;
+import prototype1_01_14_2022.build.BuildWeightTable;
+import prototype1_01_14_2022.comms.BecomeSwarmLeader;
+import prototype1_01_14_2022.generic.SymmetryType;
+import prototype1_01_14_2022.nav.Navigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,13 +85,13 @@ public class ArchonAttachment extends Attachment {
         // Increment the weights in the build table based on priorities.
         if (rc.getRoundNum() < 60) {
             if ((rc.getMapHeight() * rc.getMapWidth()) < 1800){
-                buildWeights.addWeight(prototype1.build.BuildType.MINER, 40);
-                buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+                buildWeights.addWeight(prototype1_01_14_2022.build.BuildType.MINER, 40);
+                buildWeights.addWeight(prototype1_01_14_2022.build.BuildType.SOLDIER, 15);
             } else {
-                buildWeights.addWeight(prototype1.build.BuildType.MINER, 60);
+                buildWeights.addWeight(prototype1_01_14_2022.build.BuildType.MINER, 60);
             }
         } else {
-            buildWeights.addWeight(prototype1.build.BuildType.MINER, 5);
+            buildWeights.addWeight(prototype1_01_14_2022.build.BuildType.MINER, 5);
         }
 
         if (isInDanger()) {
@@ -116,9 +116,6 @@ public class ArchonAttachment extends Attachment {
     }
 
     private void build() throws GameActionException {
-if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
-    tryBuild(RobotType.SAGE);
-}
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1 && !isInDanger) {
             // No need to balance builds if we have tons of lead.
@@ -161,18 +158,12 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
     private Direction getAvailableBuildDirection() throws GameActionException {
         Direction[] list = Arrays.copyOf(Util.DIRECTIONS, Util.DIRECTIONS.length);
         Util.shuffle(list);
-        //lower score is better
-        Direction bestDir = Direction.CENTER;
-        for (int i = 0; i < list.length; i++) {
-            int testScore = rc.senseRubble(rc.getLocation().add(list[i]));
-            if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null ) {
-                if(testScore < 40){
-                    return list[i];
-                }
-                bestDir = list[i];
+        for (Direction dir : list) {
+            if (rc.senseRobotAtLocation(rc.getLocation().add(dir)) == null) {
+                return dir;
             }
         }
-        return bestDir;
+        return Direction.CENTER;
     }
 
     private void repair() throws GameActionException {
