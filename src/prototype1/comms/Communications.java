@@ -37,13 +37,25 @@ public final class Communications {
     private static final int ARCHON_DANGER = 8;
     private static final int RUSHING_ARCHON = 9;
     private static final Range SEGMENT_CRIES_FOR_HELP = new Range(10, 14);
-    private static final int RAY_DISPERSION = 14;
+    private static final int LEAD_COUNTER = 14;
     private static final Range SEGMENT_LEAD_LOCATIONS = new Range(15, 20);
 
     public Communications(RobotController rc) {
         this.rc = rc;
     }
-
+    public void addTurnLeadAmount(int amount) throws GameActionException{
+        if(isSlotFree(LEAD_COUNTER)){
+            writeSlot(LEAD_COUNTER,amount);
+        } else {
+            writeSlot(LEAD_COUNTER, readSlot(LEAD_COUNTER) + amount);
+        }
+    }
+    public int getTurnLeadAmount() throws GameActionException{
+        if(isSlotFree(LEAD_COUNTER)){
+            return 0;
+        }
+        return readSlot(LEAD_COUNTER);
+    }
     public List<MapLocation> readFriendlyArchons() throws GameActionException {
         List<MapLocation> res = new ArrayList<>(4);
         for (int i = SEGMENT_FRIENDLY_ARCHONS.start; i < SEGMENT_FRIENDLY_ARCHONS.end; i++) {

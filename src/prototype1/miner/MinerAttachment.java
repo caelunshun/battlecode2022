@@ -11,19 +11,24 @@ import java.util.List;
 
 public class MinerAttachment extends Attachment {
     private final Navigator nav;
+    private int leadThisRound;
 
     public MinerAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
+        leadThisRound = 0;
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        leadThisRound = 0;
         if (flee()) {
             mine();
+            robot.getComms().addTurnLeadAmount(leadThisRound);
             return;
         };
         mine();
+        robot.getComms().addTurnLeadAmount(leadThisRound);
         if (moveTowardCloseLead() || moveTowardFarLead()) {
             robot.endTurn();
         }
@@ -73,6 +78,7 @@ public class MinerAttachment extends Attachment {
             while ((rc.senseLead(loc) >1 || closerToEnemy()) && rc.canMineLead(loc)) {
                 rc.mineLead(loc);
                 rc.setIndicatorString("Mined lead");
+                leadThisRound++;
             }
         }
         return false;

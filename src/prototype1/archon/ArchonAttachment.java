@@ -24,6 +24,10 @@ public class ArchonAttachment extends Attachment {
 
     private boolean isInDanger = false;
 
+    private int lastRoundLead;
+
+    private int[] lastLeadAmounts;
+
     public static final int tiebreakerRound = 1850;
 
     private BuildWeightTable buildWeights = new BuildWeightTable();
@@ -44,6 +48,8 @@ public class ArchonAttachment extends Attachment {
 
         isMapTestSmall = rc.senseNearbyLocationsWithLead(rc.getType().visionRadiusSquared).length
                 > 40;
+        lastRoundLead = 0;
+        lastLeadAmounts = new int[5];
     }
 
     @Override
@@ -54,12 +60,14 @@ public class ArchonAttachment extends Attachment {
         if(isMovingAwayFromRubble && rc.getRoundNum() != 1){
             moveAway();
         }*/
-
+        System.arraycopy(lastLeadAmounts, 0,lastLeadAmounts,1,4);
+        lastLeadAmounts[0] = getRoundLead();
         isLead = robot.getFriendlyArchons().indexOf(rc.getLocation()) == 0;
         isInDanger = isInDanger();
         robot.getComms().setArchonInDanger(robot.getFriendlyArchons().indexOf(rc.getLocation()), isInDanger);
 
         incrementBuildWeights();
+
         if (rc.getRoundNum() < tiebreakerRound) {
             build();
         } else {
@@ -79,6 +87,8 @@ public class ArchonAttachment extends Attachment {
         if (isInDanger) {
             rc.setIndicatorString("In Danger");
         }
+        rc.setIndicatorString(Arrays.toString(lastLeadAmounts));
+        setLastRoundLead();
     }
 
     private void incrementBuildWeights() throws GameActionException {
@@ -356,5 +366,11 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
             return;
         }
         nav.advanceToward(toGo);
+    }
+    public int getRoundLead() throws GameActionException{
+        return robot.getComms().getTurnLeadAmount() - lastRoundLead;
+    }
+    public void setLastRoundLead() throws GameActionException{
+        lastRoundLead = robot.getComms().getTurnLeadAmount();
     }
 }
