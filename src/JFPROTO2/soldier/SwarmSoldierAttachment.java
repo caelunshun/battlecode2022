@@ -1,14 +1,15 @@
-package prototype1.soldier;
+package JFPROTO2.soldier;
 
-import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.comms.CryForHelp;
-import prototype1.generic.DispersionAttachment;
-import prototype1.nav.Navigator;
-
-import java.util.Arrays;
+import JFPROTO2.Attachment;
+import JFPROTO2.Robot;
+import JFPROTO2.Util;
+import JFPROTO2.comms.CryForHelp;
+import JFPROTO2.generic.DispersionAttachment;
+import JFPROTO2.nav.Navigator;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
 
 public class SwarmSoldierAttachment extends Attachment {
     private final Navigator nav;
