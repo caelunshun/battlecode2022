@@ -93,16 +93,33 @@ public class ArchonAttachment extends Attachment {
 
     private void incrementBuildWeights() throws GameActionException {
         // Increment the weights in the build table based on priorities.
+        boolean noLeadCollected = noLeadCollected();
         if (rc.getRoundNum() < 60) {
             if ((rc.getMapHeight() * rc.getMapWidth()) < 1800){
-                buildWeights.addWeight(prototype1.build.BuildType.MINER, 40);
-                buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+                if(noLeadCollected) {
+                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 40);
+                    buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+                } else {
+                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 25);
+                    buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+                }
             } else {
-                buildWeights.addWeight(prototype1.build.BuildType.MINER, 60);
+                if(noLeadCollected){
+                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 30);
+                    buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+                } else {
+                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 60);
+                }
+
             }
         } else {
-            buildWeights.addWeight(prototype1.build.BuildType.MINER, 5);
+            if(noLeadCollected){
+                buildWeights.addWeight(BuildType.MINER, 1);
+            } else {
+                buildWeights.addWeight(prototype1.build.BuildType.MINER, 5);
+            }
         }
+
 
         if (isInDanger()) {
             buildWeights.addWeight(BuildType.DEFENSE_SOLDIER, 200);
@@ -124,7 +141,17 @@ public class ArchonAttachment extends Attachment {
             buildWeights.addWeight(BuildType.BUILDER, weight);
         }
     }
-
+    public boolean noLeadCollected(){
+        if(rc.getRoundNum() <= 12){
+            return false;
+        }
+        for(int lead : lastLeadAmounts){
+            if(lead != 0){
+                return false;
+            }
+        }
+        return true;
+    }
     private void build() throws GameActionException {
 if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
     tryBuild(RobotType.SAGE);
