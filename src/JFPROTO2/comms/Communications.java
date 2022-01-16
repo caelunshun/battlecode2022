@@ -1,14 +1,11 @@
-package prototype1.comms;
+package JFPROTO2.comms;
 
+import JFPROTO2.generic.SymmetryType;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
-import prototype1.BotConstants;
-import prototype1.build.BuildWeightTable;
-import prototype1.generic.SymmetryType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -37,9 +34,8 @@ public final class Communications {
     private static final int ARCHON_DANGER = 8;
     private static final int RUSHING_ARCHON = 9;
     private static final Range SEGMENT_CRIES_FOR_HELP = new Range(10, 14);
-    private static final Range SEGMENT_LEAD_LOCATIONS = new Range(14, 19);
-    private static final Range SEGMENT_DISPERSION_ANGLES = new Range(20, 24);
-    private static final int LEAD_COUNTER = 24;
+    private static final int LEAD_COUNTER = 14;
+    private static final Range SEGMENT_LEAD_LOCATIONS = new Range(15, 20);
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -255,26 +251,6 @@ public final class Communications {
             }
         }
         return -1;
-    }
-
-    public Double[] getDispersionAngles() throws GameActionException {
-        Double[] angles = new Double[4];
-        for (int i = 0; i < angles.length; i++) {
-            int slot = SEGMENT_DISPERSION_ANGLES.start + i;
-            if (!isSlotFree(slot)) {
-                angles[i] = Math.toRadians(readSlot(slot));
-            }
-        }
-        return angles;
-    }
-
-    public void setDispersionAngle(int archonIndex, Double angle) throws GameActionException {
-        int slot = SEGMENT_DISPERSION_ANGLES.start + archonIndex;
-        if (angle == null) {
-            clearSlot(slot);
-        } else {
-            writeSlot(slot, (int) Math.toDegrees(angle));
-        }
     }
 
     private boolean isSlotFree(int index) throws GameActionException {

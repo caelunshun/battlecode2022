@@ -1,12 +1,14 @@
-package prototype1.miner;
+package JFPROTO2.miner;
 
-import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.nav.Navigator;
+import JFPROTO2.Attachment;
+import JFPROTO2.Robot;
+import JFPROTO2.Util;
+import JFPROTO2.nav.Navigator;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MinerAttachment extends Attachment {

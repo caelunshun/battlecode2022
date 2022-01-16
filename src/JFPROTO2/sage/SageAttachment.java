@@ -1,11 +1,12 @@
-package prototype1.sage;
+package JFPROTO2.sage;
 
-import battlecode.common.*;
-import prototype1.Attachment;
-import prototype1.Robot;
-import prototype1.Util;
-import prototype1.generic.AttackAttachment;
-import prototype1.nav.Navigator;
+import JFPROTO2.Attachment;
+import JFPROTO2.Robot;
+import JFPROTO2.generic.AttackAttachment;
+import battlecode.common.AnomalyType;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotMode;
 
 public class SageAttachment extends Attachment {
     AttackAttachment attack;
@@ -15,7 +16,6 @@ public class SageAttachment extends Attachment {
     }
     @Override
     public void doTurn() throws GameActionException {
-        decideAttack();
     }
     public void decideAttack() throws GameActionException{
         int furyDamage = 0;

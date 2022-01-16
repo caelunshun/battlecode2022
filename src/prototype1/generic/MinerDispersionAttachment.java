@@ -1,11 +1,11 @@
 package prototype1.generic;
 
-import JFPROTO.Util;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import prototype1.Attachment;
 import prototype1.Robot;
+import prototype1.Util;
 import prototype1.comms.CryForHelp;
 import prototype1.nav.Bugger;
 import prototype1.nav.Navigator;
