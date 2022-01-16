@@ -4,6 +4,7 @@ import battlecode.common.*;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.comms.CryForHelp;
 import prototype1.nav.Navigator;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class MinerAttachment extends Attachment {
         if (moveTowardCloseLead() || moveTowardFarLead()) {
             robot.endTurn();
         }
+        issueCryForHelp();
     }
 
     private boolean flee() throws GameActionException {
@@ -172,5 +174,32 @@ public class MinerAttachment extends Attachment {
         }
 
         return false;
+    }
+
+    private void issueCryForHelp() throws GameActionException {
+        int numEnemies = 0;
+        MapLocation nearestEnemy = null;
+        int numFriendlies = 0;
+        for (RobotInfo info : rc.senseNearbyRobots()) {
+            if (info.type.canAttack()) {
+                if (info.team == rc.getTeam()) {
+                    ++numEnemies;
+                    if (nearestEnemy == null || rc.getLocation().distanceSquaredTo(nearestEnemy) > rc.getLocation().distanceSquaredTo(info.location)) {
+                        nearestEnemy = info.location;
+                    }
+                }
+            }
+        }
+        if (nearestEnemy == null) return;
+        for (RobotInfo info : rc.senseNearbyRobots(nearestEnemy.distanceSquaredTo(rc.getLocation()), rc.getTeam())) {
+            if (info.type.canAttack()) {
+                ++numFriendlies;
+            }
+        }
+
+        if (numFriendlies > numEnemies) {
+            CryForHelp cry = new CryForHelp(nearestEnemy, numEnemies,rc.getRoundNum());
+            robot.getComms().addCryForHelp(cry);
+        }
     }
 }
