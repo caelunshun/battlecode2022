@@ -44,7 +44,7 @@ public class RobotBuilder {
                 break;
             case MINER:
                 robot.addAttachment(new MinerAttachment(robot));
-                robot.addAttachment(new DispersionAttachment(robot));
+                robot.addAttachment(new MinerDispersionAttachment(robot));
                 break;
             case BUILDER:
                 if(robot.getRc().getRoundNum() < ArchonAttachment.tiebreakerRound) {

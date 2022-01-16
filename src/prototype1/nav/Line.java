@@ -69,8 +69,6 @@ public class Line {
         double y = this.evaluate(x);
         if (this.isVertical()) y = line.evaluate(x);
 
-        System.out.println(this + "\n" + line + "\n" + tile + ": (" + x + ", " + y + ")");
-
         double xOffset = x - tile.x;
         double yOffset = y - tile.y;
         return this.equals(line) || (xOffset >= 0 && xOffset <= 1 && yOffset >= 0 && yOffset <= 1);

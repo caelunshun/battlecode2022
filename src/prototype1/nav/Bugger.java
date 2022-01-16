@@ -7,54 +7,28 @@ import battlecode.common.RobotController;
 import prototype1.Robot;
 
 /**
- * Macro-level navigator with bugnav.
+ * Implements the infamous bugnav algorithm.
  */
-@Deprecated
-public final class BugNavigator {
+public class Bugger {
     Robot robot;
     RobotController rc;
 
-    MapLocation currentTarget;
-    boolean bugging;
-    Line sourceToTarget;
     Direction facing;
 
     int passabilityThreshold = 24;
 
-    public BugNavigator(Robot robot) {
+    public Bugger(Robot robot) {
         this.robot = robot;
         this.rc = robot.getRc();
     }
 
-    public void advanceToward(MapLocation target) throws GameActionException {
-        if (currentTarget == null) {
-            reset(target);
+    public void advance(MapLocation target) throws GameActionException {
+        if (facing == null) {
+            facing = rc.getLocation().directionTo(target);
         }
-
-        currentTarget = target;
-        Direction dir = pathfind();
-        if (robot.getRc().canMove(dir)) {
-            robot.getRc().move(dir);
-        }
-    }
-
-    private Direction pathfind() throws GameActionException {
-        Direction naive = rc.getLocation().directionTo(currentTarget);
-        if (!canMove(naive))  {
-            if (!bugging) facing = naive;
-            bugging = true;
-        }
-        if (!bugging) {
-            return naive;
-        } else {
-            if (!sourceToTarget.isEndpoint(rc.getLocation())
-                    && sourceToTarget.intersectsTile(rc.getLocation())
-                    && canMove(naive)) {
-                bugging = false;
-                return naive;
-            } else {
-                return bug();
-            }
+        Direction dir = bug();
+        if (rc.canMove(dir)) {
+            rc.move(dir);
         }
     }
 
@@ -100,10 +74,7 @@ public final class BugNavigator {
         }
     }
 
-    public void reset(MapLocation target) {
-        currentTarget = target;
-        bugging = false;
-        sourceToTarget = new Line(rc.getLocation(), target);
+    public void reset() {
         facing = null;
     }
 

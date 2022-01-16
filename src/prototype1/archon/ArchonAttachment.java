@@ -34,11 +34,12 @@ public class ArchonAttachment extends Attachment {
     private boolean isMovingAwayFromRubble = false;
     private Navigator nav;
     private MapLocation idealSpot;
+
     public ArchonAttachment(Robot robot) throws GameActionException {
         super(robot);
 
         this.nav = new Navigator(robot);
-        idealSpot = new MapLocation(rc.getLocation().x,rc.getLocation().y);
+        idealSpot = new MapLocation(rc.getLocation().x, rc.getLocation().y);
         robot.getComms().addFriendlyArchon(rc.getLocation());
         numArchons = rc.getArchonCount();
 
@@ -72,9 +73,7 @@ public class ArchonAttachment extends Attachment {
             initialFriendlyArchons.addAll(robot.getFriendlyArchons());
         }
 
-        if (isLead) {
-            initiateRush();
-        }
+        updateDispersionAngle();
 
         if (isInDanger) {
             rc.setIndicatorString("In Danger");
@@ -84,7 +83,7 @@ public class ArchonAttachment extends Attachment {
     private void incrementBuildWeights() throws GameActionException {
         // Increment the weights in the build table based on priorities.
         if (rc.getRoundNum() < 60) {
-            if ((rc.getMapHeight() * rc.getMapWidth()) < 1800){
+            if ((rc.getMapHeight() * rc.getMapWidth()) < 1800) {
                 buildWeights.addWeight(prototype1.build.BuildType.MINER, 40);
                 buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
             } else {
@@ -116,9 +115,9 @@ public class ArchonAttachment extends Attachment {
     }
 
     private void build() throws GameActionException {
-if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
-    tryBuild(RobotType.SAGE);
-}
+        if (rc.getTeamGoldAmount(rc.getTeam()) >= 20) {
+            tryBuild(RobotType.SAGE);
+        }
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1 && !isInDanger) {
             // No need to balance builds if we have tons of lead.
@@ -165,8 +164,8 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
         Direction bestDir = Direction.CENTER;
         for (int i = 0; i < list.length; i++) {
             int testScore = rc.senseRubble(rc.getLocation().add(list[i]));
-            if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null ) {
-                if(testScore < 40){
+            if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null) {
+                if (testScore < 40) {
                     return list[i];
                 }
                 bestDir = list[i];
@@ -259,6 +258,7 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
     }
 
     int inDangerTurns = 0;
+
     private boolean isInDanger() throws GameActionException {
         // Check if the total health of nearby enemy robots (that can attack)
         // is greater than the total health of our nearby robots (that can attack).
@@ -285,6 +285,7 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
     }
 
     int lastRushTurn = -1;
+
     private void initiateRush() throws GameActionException {
         // robot.getComms().setRushingArchon(null);
 
@@ -302,53 +303,54 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
         robot.getComms().setRushingArchon(Util.getClosest(rc.getLocation(), robot.getEnemyArchons()));
         lastRushTurn = rc.getRoundNum();
     }
-    public void moveAway() throws GameActionException{
-       MapLocation[] locs =  rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared);
-       int spot = -1;
-       if(locs.length == 0){
-           isMovingAwayFromRubble = false;
-           return;
-       }
-       if(rc.senseRubble(rc.getLocation()) < 50 && rc.getMode() == RobotMode.TURRET){
 
-           isMovingAwayFromRubble = false;
-           return;
-       }
-       isMovingAwayFromRubble = true;
-       double minRubble = rc.senseRubble(rc.getLocation());
-       for(int i = 0; i < locs.length; i++){
-           double rub = rc.senseRubble(locs[i]) + Math.pow( rc.getLocation().distanceSquaredTo(locs[i]), 0.2);
-           if( (rub + Math.pow(rc.getLocation().distanceSquaredTo(locs[i]), 0.2 ) ) < minRubble){
-               minRubble = rub;
-               spot = i;
-           }
-       }
-       if(spot == -1){
-           if(rc.getMode() == RobotMode.TURRET){
-               isMovingAwayFromRubble = false;
-               return;
-           }
-           if(rc.canTransform()){
-               rc.transform();
-           }
-       } else {
-           idealSpot = locs[spot];
-       }
-            moveToLoc(idealSpot);
+    public void moveAway() throws GameActionException {
+        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared);
+        int spot = -1;
+        if (locs.length == 0) {
+            isMovingAwayFromRubble = false;
+            return;
+        }
+        if (rc.senseRubble(rc.getLocation()) < 50 && rc.getMode() == RobotMode.TURRET) {
 
+            isMovingAwayFromRubble = false;
+            return;
+        }
+        isMovingAwayFromRubble = true;
+        double minRubble = rc.senseRubble(rc.getLocation());
+        for (int i = 0; i < locs.length; i++) {
+            double rub = rc.senseRubble(locs[i]) + Math.pow(rc.getLocation().distanceSquaredTo(locs[i]), 0.2);
+            if ((rub + Math.pow(rc.getLocation().distanceSquaredTo(locs[i]), 0.2)) < minRubble) {
+                minRubble = rub;
+                spot = i;
+            }
+        }
+        if (spot == -1) {
+            if (rc.getMode() == RobotMode.TURRET) {
+                isMovingAwayFromRubble = false;
+                return;
+            }
+            if (rc.canTransform()) {
+                rc.transform();
+            }
+        } else {
+            idealSpot = locs[spot];
+        }
+        moveToLoc(idealSpot);
     }
-    public void moveToLoc(MapLocation toGo) throws GameActionException{
-        if(rc.getMode() == RobotMode.TURRET){
-            if(rc.canTransform()){
+
+    public void moveToLoc(MapLocation toGo) throws GameActionException {
+        if (rc.getMode() == RobotMode.TURRET) {
+            if (rc.canTransform()) {
                 rc.transform();
             }
             return;
         }
-        if(rc.getLocation().equals(toGo)){
-            if(rc.getMode() == RobotMode.TURRET){
+        if (rc.getLocation().equals(toGo)) {
+            if (rc.getMode() == RobotMode.TURRET) {
                 return;
             }
-            if(rc.canTransform()){
+            if (rc.canTransform()) {
                 rc.transform();
                 isMovingAwayFromRubble = false;
             }
@@ -356,5 +358,51 @@ if(rc.getTeamGoldAmount(rc.getTeam()) >= 20){
             return;
         }
         nav.advanceToward(toGo);
+    }
+
+    private List<Double> usedDispersionAngles = new ArrayList<>();
+    private double dispersionAngleThreshold = Math.PI / 2;
+
+    private void updateDispersionAngle() throws GameActionException {
+        int archonIndex = robot.getFriendlyArchons().indexOf(rc.getLocation());
+        if (robot.getComms().getDispersionAngles()[archonIndex] != null) return;
+
+        int tries = 0;
+        Double angle = null;
+        while (angle == null) {
+            double theta = robot.getRng().nextDouble() * Math.PI * 2;
+            if (isGoodDispersionAngle(theta)) {
+                angle = theta;
+            }
+            ++tries;
+
+            if (tries >= 20) {
+                dispersionAngleThreshold /= 2;
+                tries = 0;
+            }
+        }
+
+        System.out.println("Chose " + angle + "; Used: " + usedDispersionAngles);
+
+        robot.getComms().setDispersionAngle(archonIndex, angle);
+        rc.setIndicatorString("Dispersion Angle: " + Math.toDegrees(angle));
+        usedDispersionAngles.add(angle);
+    }
+
+    private boolean isGoodDispersionAngle(double angle) {
+        for (double used : usedDispersionAngles) {
+            if (Math.abs(Util.cmpAngles(used, angle)) < dispersionAngleThreshold) {
+                return false;
+            }
+        }
+
+        int x = (int) (8 * Math.cos(angle));
+        int y = (int) (8 * Math.sin(angle));
+        MapLocation loc = rc.getLocation().translate(x, y);
+        if (!Util.isOnTheMap(loc, rc)) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -37,8 +37,8 @@ public final class Communications {
     private static final int ARCHON_DANGER = 8;
     private static final int RUSHING_ARCHON = 9;
     private static final Range SEGMENT_CRIES_FOR_HELP = new Range(10, 14);
-    private static final int RAY_DISPERSION = 14;
-    private static final Range SEGMENT_LEAD_LOCATIONS = new Range(15, 20);
+    private static final Range SEGMENT_LEAD_LOCATIONS = new Range(14, 19);
+    private static final Range SEGMENT_DISPERSION_ANGLES = new Range(20, 24);
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -242,6 +242,26 @@ public final class Communications {
             }
         }
         return -1;
+    }
+
+    public Double[] getDispersionAngles() throws GameActionException {
+        Double[] angles = new Double[4];
+        for (int i = 0; i < angles.length; i++) {
+            int slot = SEGMENT_DISPERSION_ANGLES.start + i;
+            if (!isSlotFree(slot)) {
+                angles[i] = Math.toRadians(readSlot(slot));
+            }
+        }
+        return angles;
+    }
+
+    public void setDispersionAngle(int archonIndex, Double angle) throws GameActionException {
+        int slot = SEGMENT_DISPERSION_ANGLES.start + archonIndex;
+        if (angle == null) {
+            clearSlot(slot);
+        } else {
+            writeSlot(slot, (int) Math.toDegrees(angle));
+        }
     }
 
     private boolean isSlotFree(int index) throws GameActionException {
