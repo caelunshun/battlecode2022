@@ -108,6 +108,7 @@ public class ArchonAttachment extends Attachment {
                     buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
                 } else {
                     buildWeights.addWeight(prototype1.build.BuildType.MINER, 60);
+                    buildWeights.addWeight(BuildType.SOLDIER, 15);
                 }
 
             }

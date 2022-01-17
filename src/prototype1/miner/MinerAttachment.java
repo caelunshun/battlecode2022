@@ -32,8 +32,7 @@ public class MinerAttachment extends Attachment {
         robot.getComms().addTurnLeadAmount(leadThisRound);
         if (moveTowardCloseLead() || moveTowardFarLead()) {
             robot.endTurn();
-        }
-        issueCryForHelp();
+        }//issueCryForHelp();
     }
 
     private boolean flee() throws GameActionException {
