@@ -96,19 +96,19 @@ public class ArchonAttachment extends Attachment {
         if (rc.getRoundNum() < 60) {
             if ((rc.getMapHeight() * rc.getMapWidth()) < 1800){
                 if(noLeadCollected) {
-                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 40);
+                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 5);
                     buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
                 } else {
                     buildWeights.addWeight(prototype1.build.BuildType.MINER, 25);
-                    buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
+                    buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 25);
                 }
             } else {
                 if(noLeadCollected){
-                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 30);
+                    buildWeights.addWeight(prototype1.build.BuildType.MINER, 5);
                     buildWeights.addWeight(prototype1.build.BuildType.SOLDIER, 15);
                 } else {
                     buildWeights.addWeight(prototype1.build.BuildType.MINER, 60);
-                    buildWeights.addWeight(BuildType.SOLDIER, 15);
+                    buildWeights.addWeight(BuildType.SOLDIER, 20);
                 }
 
             }

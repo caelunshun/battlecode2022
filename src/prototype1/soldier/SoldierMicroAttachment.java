@@ -34,14 +34,7 @@ public class SoldierMicroAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         updateStates();
-        // updateRush();
         doCombatMicro();
-
-        if (closestEnemy == null) {
-            if (!followCallsForHelp()) {
-                if (!rushArchons()) { }
-            }
-        }
     }
 
     private void updateStates() throws GameActionException {
@@ -171,33 +164,5 @@ public class SoldierMicroAttachment extends Attachment {
 
     private boolean isOutnumbered() {
         return numEnemies > numFriendlies * 0.8;
-    }
-
-    private boolean followCallsForHelp() throws GameActionException {
-        CryForHelp closest = null;
-        for (CryForHelp cry : criesForHelp) {
-            if (cry == null) continue;
-            if (rc.getRoundNum() - cry.roundNumber > 3) continue;
-            if (closest == null
-                || rc.getLocation().distanceSquaredTo(cry.enemyLoc) < rc.getLocation().distanceSquaredTo(closest.enemyLoc)) {
-                closest = cry;
-            }
-        }
-
-        if (closest == null) return false;
-
-        rc.setIndicatorString("Following Cry for Help " + closest.enemyLoc);
-
-        nav.advanceToward(closest.enemyLoc);
-        return true;
-    }
-
-    private boolean rushArchons() throws GameActionException {
-        MapLocation rush = robot.getComms().getRushingArchon();
-        if (rush != null) {
-            nav.advanceToward(rush);
-            return true;
-        }
-        return false;
     }
 }

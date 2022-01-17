@@ -4,6 +4,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import prototype1.BotConstants;
+import prototype1.Util;
 import prototype1.build.BuildWeightTable;
 import prototype1.generic.SymmetryType;
 
@@ -41,6 +42,7 @@ public final class Communications {
     private static final Range SEGMENT_DISPERSION_ANGLES = new Range(20, 24);
     private static final int LEAD_COUNTER = 24;
     private static final int SCOUTING_MASK = 25;
+    private static final Range ENEMY_SPOTTED_LOCATIONS = new Range(25, 28);
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -189,6 +191,55 @@ public final class Communications {
                 if (cries[i].enemyLoc.distanceSquaredTo(enemyLoc) <= 9) {
                     return true;
                 } else if (rc.getRoundNum() - cries[i].roundNumber > 1) {
+                    clearSlot(SEGMENT_CRIES_FOR_HELP.start + i);
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public EnemySpottedLocation[] getEnemySpottedLocations() throws GameActionException {
+        EnemySpottedLocation[] res = new EnemySpottedLocation[4];
+        for (int i = ENEMY_SPOTTED_LOCATIONS.start; i < ENEMY_SPOTTED_LOCATIONS.end; i++) {
+            if (!isSlotFree(i)) {
+                BitDecoder dec = new BitDecoder(readSlot(i));
+                MapLocation enemyLoc = dec.readMapLocation();
+                int roundNumber = dec.read(12);
+                res[i - ENEMY_SPOTTED_LOCATIONS.start] = new EnemySpottedLocation(enemyLoc, roundNumber);
+            }
+        }
+        return res;
+    }
+
+    public void addEnemySpottedLocation(EnemySpottedLocation loc) throws GameActionException {
+        if (clearSpotted(loc.loc)) return;
+
+        int free = -1;
+        for (int i = SEGMENT_CRIES_FOR_HELP.start; i < SEGMENT_CRIES_FOR_HELP.end; i++) {
+            if (isSlotFree(i)) {
+                free = i;
+                break;
+            }
+        }
+
+        if (free != -1) {
+            BitEncoder enc = new BitEncoder();
+            enc.writeMapLocation(loc.loc);
+            enc.write(loc.roundNumber, 12);
+            writeSlot(free, enc.finish());
+        }
+    }
+
+    private boolean clearSpotted(MapLocation enemyLoc) throws GameActionException {
+        EnemySpottedLocation[] locs = getEnemySpottedLocations();
+        for (int i = 0; i < locs.length; i++) {
+            if (locs[i] != null) {
+                if (locs[i].loc.distanceSquaredTo(enemyLoc) <= 9) {
+                    return true;
+                } else if (rc.getRoundNum() - locs[i].roundNumber > 3) {
                     clearSlot(SEGMENT_CRIES_FOR_HELP.start + i);
                     return false;
                 }

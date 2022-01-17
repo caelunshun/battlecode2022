@@ -40,18 +40,26 @@ public class MinerAttachment extends Attachment {
 
         double vx = 0;
         double vy = 0;
-        for (RobotInfo nearby : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
+        int numEnemies = 0;
+        int numFriendlies = 0;
+        for (RobotInfo nearby : rc.senseNearbyRobots()) {
             if (nearby.type.canAttack()) {
-                double dx = rc.getLocation().x - nearby.location.x;
-                double dy = rc.getLocation().y - nearby.location.y;
-                double len = Math.hypot(dx, dy);
-                dx /= len;
-                dy /= len;
-                vx += dx;
-                vy += dy;
+                if (nearby.team == rc.getTeam()) {
+                    ++numFriendlies;
+                } else {
+                    double dx = rc.getLocation().x - nearby.location.x;
+                    double dy = rc.getLocation().y - nearby.location.y;
+                    double len = Math.hypot(dx, dy);
+                    dx /= len;
+                    dy /= len;
+                    vx += dx;
+                    vy += dy;
+                    ++numEnemies;
+                }
             }
         }
 
+        if (numFriendlies > numEnemies) return false;
         if (vx == 0 && vy == 0) return false;
 
         Direction dir = Util.getDirFromAngle(Math.atan2(vy, vx));

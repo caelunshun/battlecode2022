@@ -29,6 +29,8 @@ public class Bugger {
         Direction dir = bug();
         if (rc.canMove(dir)) {
             rc.move(dir);
+        } else {
+            robot.moveRandom();
         }
     }
 
@@ -47,7 +49,8 @@ public class Bugger {
         } else if (!canMove(facing)) {
             // turn right to keep left hand on wall...
             Direction dir = facing.rotateRight();
-            while (!canMove(dir)) dir = dir.rotateRight();
+            int attempts = 0;
+            while (!canMove(dir) && attempts++ < 8) dir = dir.rotateRight();
             facing = dir;
             move = dir;
         } else {
