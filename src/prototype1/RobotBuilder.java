@@ -6,13 +6,12 @@ import battlecode.common.RobotType;
 import prototype1.archon.*;
 import prototype1.builder.DefenseBuilderAttachment;
 import prototype1.builder.LabBuilderAttachment;
-import prototype1.builder.RushBuilderAttachment;
 import prototype1.builder.SacrificeBuilderAttachment;
 import prototype1.generic.*;
 import prototype1.laboratory.LaboratoryAttachment;
 import prototype1.miner.MinerAttachment;
-import prototype1.soldier.SoldierAttachment;
-import prototype1.soldier.SwarmSoldierAttachment;
+import prototype1.soldier.SoldierMacroAttachment;
+import prototype1.soldier.SoldierMicroAttachment;
 import prototype1.sage.SageAttachment;
 import prototype1.watchtower.WatchtowerAttachment;
 
@@ -59,17 +58,9 @@ public class RobotBuilder {
 
                 break;
             case SOLDIER:
-                /*if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET) {
-                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.ROTATIONAL));
-                }
-                if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 1) {
-                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.HORIZONTAL));
-                }
-                if(robot.getComms().getBuildIndex() == ArchonAttachment.SOLDIER_BUILDING_OFFSET + 2) {
-                    robot.addAttachment(new ScoutAttachment(robot, SymmetryType.VERTICAL));
-                }*/
                 robot.addAttachment(new AttackAttachment(robot));
-                robot.addAttachment(new SwarmSoldierAttachment(robot));
+                robot.addAttachment(new SoldierMicroAttachment(robot));
+                robot.addAttachment(new SoldierMacroAttachment(robot));
                 robot.addAttachment(new AttackAttachment(robot));
                 robot.addAttachment(new LeadSpotterAttachment(robot));
                 break;

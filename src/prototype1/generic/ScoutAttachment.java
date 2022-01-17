@@ -1,73 +1,91 @@
 package prototype1.generic;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
 import prototype1.Attachment;
 import prototype1.Robot;
 import prototype1.Util;
+import prototype1.comms.ScoutingMask;
 import prototype1.nav.Navigator;
 
 import java.util.List;
 
 public class ScoutAttachment extends Attachment {
-    private MapLocation predictedLocation = null;
-    private SymmetryType type;
-    private boolean alreadyFound = false;
-    private boolean alreadyFoundAll = false;
-    private Navigator nav;
-    private SymmetryType nextType;
+    private final Navigator nav;
 
-    public ScoutAttachment(Robot robot, SymmetryType type) {
+    public ScoutAttachment(Robot robot) {
         super(robot);
-        this.type = type;
+        this.nav = new Navigator(robot);
+
+    }
+
+    @Override
+    public void doTurn() throws GameActionException {
+        if (!rc.isMovementReady()) return;
+        if (rc.getLocation().distanceSquaredTo(Util.getCenterLocation(rc)) <= 16) {
+            robot.moveRandom();
+        } else {
+            nav.advanceToward(Util.getCenterLocation(rc));
+        }
+    }
+
+    /*private MapLocation chosen;
+    private List<MapLocation> ruledOut;
+    boolean movingRandom = false;
+
+    public ScoutAttachment(Robot robot) {
+        super(robot);
         this.nav = new Navigator(robot);
     }
 
     @Override
     public void doTurn() throws GameActionException {
-        if(alreadyFoundAll){
+        if (!rc.isMovementReady()) return;
+
+        if (movingRandom) {
+            robot.moveRandom();
             return;
         }
-        if (!alreadyFound) {
-            if (predictedLocation == null) {
-                predictedLocation = goToSpotNew(type, robot.getHomeArchon());
-            }
-            if (predictedLocation != null) {
-                nav.advanceToward(predictedLocation);
+
+        ScoutingMask mask = robot.getComms().getScoutingMask();
+        List<MapLocation> spottedLocs = mask.getEnemySpottedLocations(robot);
+        MapLocation nearest = Util.getClosest(rc.getLocation(), spottedLocs);
+        if (nearest != null) {
+            if (rc.getLocation().distanceSquaredTo(nearest) <= 36) {
+                movingRandom = true;
             }
 
-            if (rc.getLocation().distanceSquaredTo(predictedLocation) < rc.getType().visionRadiusSquared) {
-                alreadyFound = true;
+            nav.advanceToward(nearest);
+            rc.setIndicatorString("Scout-Attacking to " + nearest);
+        } else {
+            if (chosen != null && rc.getLocation().distanceSquaredTo(chosen) <= 36) {
+                ruledOut.add(chosen);
+                chosen = null;
             }
-        } else{
-            if(nextType == null){
-                nextType = type.getNextSymmetryType();
-            } else {
-                nextType = nextType.getNextSymmetryType();
+            if (chosen == null) {
+                List<MapLocation> viable = ScoutingMask.getAllLocations(robot);
+                do {
+                    chosen = viable.get(robot.getRng().nextInt(viable.size()));
+                } while (ruledOut.contains(chosen));
             }
-            if(nextType == type){
-                alreadyFoundAll = true;
-                return;
-            }
-            alreadyFound = false;
-            predictedLocation = goToSpotNew(nextType, robot.getHomeArchon());
+            nav.advanceToward(chosen);
+            rc.setIndicatorString("Scout-Scouting to " + chosen);
         }
-        rc.setIndicatorString("Scout - " + nextType);
-    }
 
-    public MapLocation goToSpot(SymmetryType type) throws GameActionException {
-        List<MapLocation> friendlyArchons = robot.getFriendlyArchons();
-        MapLocation homeArchon = null;
-        int min = friendlyArchons.get(0).distanceSquaredTo(rc.getLocation());
-        for (MapLocation locations : friendlyArchons) {
-            if (locations.distanceSquaredTo(rc.getLocation()) <= min) {
-                min = locations.distanceSquaredTo(rc.getLocation());
-                homeArchon = locations;
+        int numEnemies = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()).length;
+        if (numEnemies > 0) {
+            for (int archonIndex = 0; archonIndex < rc.getArchonCount(); archonIndex++) {
+                for (SymmetryType symm : SymmetryType.values()) {
+                    MapLocation loc = symm.getSymmetryLocation(robot.getFriendlyArchons().get(archonIndex), rc);
+                    if (Math.sqrt(loc.distanceSquaredTo(rc.getLocation())) <= rc.getMapWidth() / 3) {
+                        mask.markEnemySpotted(archonIndex, symm);
+                        robot.getComms().setScoutingMask(mask);
+                        rc.setIndicatorString("Spotted at " + loc);
+                        return;
+                    }
+                }
             }
         }
-        return type.getSymmetryLocation(homeArchon, rc);
-    }
-    public MapLocation goToSpotNew(SymmetryType type, MapLocation homeArchon) throws GameActionException {
-        return type.getSymmetryLocation(homeArchon, rc);
-    }
-
+    }*/
 }

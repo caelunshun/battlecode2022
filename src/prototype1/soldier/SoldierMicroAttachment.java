@@ -10,9 +10,8 @@ import prototype1.nav.Navigator;
 
 import java.util.Arrays;
 
-public class SwarmSoldierAttachment extends Attachment {
+public class SoldierMicroAttachment extends Attachment {
     private final Navigator nav;
-    private final DispersionAttachment dispersion;
 
     // States valid for current round.
     // Used for combat micro.
@@ -27,10 +26,9 @@ public class SwarmSoldierAttachment extends Attachment {
     // other cries for help
     private CryForHelp[] criesForHelp;
 
-    public SwarmSoldierAttachment(Robot robot) {
+    public SoldierMicroAttachment(Robot robot) {
         super(robot);
         this.nav = new Navigator(robot);
-        this.dispersion = new DispersionAttachment(robot);
     }
 
     @Override
@@ -41,9 +39,7 @@ public class SwarmSoldierAttachment extends Attachment {
 
         if (closestEnemy == null) {
             if (!followCallsForHelp()) {
-                if (!rushArchons()) {
-                    dispersion.doTurn();
-                }
+                if (!rushArchons()) { }
             }
         }
     }
@@ -181,7 +177,7 @@ public class SwarmSoldierAttachment extends Attachment {
         CryForHelp closest = null;
         for (CryForHelp cry : criesForHelp) {
             if (cry == null) continue;
-            if (rc.getRoundNum() - cry.roundNumber > 2) continue;
+            if (rc.getRoundNum() - cry.roundNumber > 3) continue;
             if (closest == null
                 || rc.getLocation().distanceSquaredTo(cry.enemyLoc) < rc.getLocation().distanceSquaredTo(closest.enemyLoc)) {
                 closest = cry;

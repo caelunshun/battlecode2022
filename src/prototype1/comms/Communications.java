@@ -40,6 +40,7 @@ public final class Communications {
     private static final Range SEGMENT_LEAD_LOCATIONS = new Range(14, 19);
     private static final Range SEGMENT_DISPERSION_ANGLES = new Range(20, 24);
     private static final int LEAD_COUNTER = 24;
+    private static final int SCOUTING_MASK = 25;
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -196,6 +197,18 @@ public final class Communications {
             }
         }
         return true;
+    }
+
+    public ScoutingMask getScoutingMask() throws GameActionException {
+        if (isSlotFree(SCOUTING_MASK)) {
+            return new ScoutingMask();
+        } else {
+           return new ScoutingMask(readSlot(SCOUTING_MASK));
+        }
+    }
+
+    public void setScoutingMask(ScoutingMask mask) throws GameActionException {
+        writeSlot(SCOUTING_MASK, mask.getBitmask());
     }
 
     public SymmetryType getSymmetryType() throws GameActionException {
