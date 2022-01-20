@@ -40,6 +40,9 @@ public class MinerAttachment extends Attachment {
 
     private boolean flee() throws GameActionException {
         if (!rc.isMovementReady()) return false;
+        if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) <= 25) {
+            return false;
+        }
 
         double vx = 0;
         double vy = 0;

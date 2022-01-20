@@ -9,15 +9,11 @@ import prototype2.RobotCategory;
  * Updates robot counters in the communications array.
  *
  * We increment the counter for the robot's corresponding
- * category when it is created. When it is about to die, we
- * decrement the counter.
+ * category on each turn. The lead archon resets the counters each turn.
  *
  * We can only predict when a robot is about to die.
  */
 public class RobotCounterAttachment extends Attachment {
-    private RobotCategory registeredCategory;
-    private boolean registeredDeath = false;
-
     public RobotCounterAttachment(Robot robot) {
         super(robot);
     }
@@ -26,20 +22,7 @@ public class RobotCounterAttachment extends Attachment {
     public void doTurn() throws GameActionException {
         RobotCategory category = getCategory();
         if (category == null) return;
-
-        if (category != registeredCategory) {
-            robot.getComms().incrementNumRobots(category);
-            registeredCategory = category;
-        }
-
-        if (isAboutToDie() && !registeredDeath) {
-            robot.getComms().decrementNumRobots(category);
-            registeredDeath = true;
-        }
-    }
-
-    private boolean isAboutToDie() {
-        return rc.getHealth() <= 10;
+        robot.getComms().incrementNumRobots(category);
     }
 
     private RobotCategory getCategory() {

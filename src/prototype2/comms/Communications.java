@@ -6,9 +6,6 @@ import battlecode.common.RobotController;
 import prototype2.RobotCategory;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;
-import prototype2.comms.BitDecoder;
-import prototype2.comms.BitEncoder;
-import prototype2.comms.Range;
 import prototype2.SymmetryType;
 
 import java.util.ArrayList;
@@ -237,7 +234,7 @@ public final class Communications {
     }
 
     public MapLocation[] getLeadLocations() throws GameActionException {
-        MapLocation[] res = new MapLocation[4];
+        MapLocation[] res = new MapLocation[2];
         for (int i = SEGMENT_LEAD_LOCATIONS.start; i < SEGMENT_LEAD_LOCATIONS.end; i++) {
             if (isSlotFree(i)) continue;
             BitDecoder dec = new BitDecoder(readSlot(i));
@@ -261,7 +258,7 @@ public final class Communications {
         }
 
         if (index == -1) {
-            index = new Random(33).nextInt(5);
+            index = new Random(33).nextInt(2);
         }
 
         BitEncoder enc = new BitEncoder();
@@ -309,9 +306,10 @@ public final class Communications {
         setNumRobots(category, count + 1);
     }
 
-    public void decrementNumRobots(RobotCategory category) throws GameActionException {
-        int count = getNumRobots(category);
-        setNumRobots(category, count - 1);
+    public void clearRobotCounts() throws GameActionException {
+        for (RobotCategory cat : RobotCategory.values()) {
+            setNumRobots(cat, 0);
+        }
     }
 
     private void setNumRobots(RobotCategory category, int amount) throws GameActionException {
