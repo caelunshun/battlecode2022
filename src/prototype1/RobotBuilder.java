@@ -30,6 +30,7 @@ public class RobotBuilder {
 
     private void addAttachments(Robot robot) throws GameActionException  {
         robot.addAttachment(new ArchonSpotterAttachment(robot));
+      //  robot.addAttachment(new EnemySpotterAttachment(robot));
         switch (type) {
             case ARCHON:
                 robot.addAttachment(new ArchonAttachment(robot));
