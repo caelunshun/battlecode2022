@@ -6,8 +6,11 @@ import battlecode.common.RobotType;
 import prototype2.attachment.archon.BaseArchonAttachment;
 import prototype2.attachment.builder.BuilderAttachment;
 import prototype2.attachment.generic.*;
+import prototype2.attachment.laboratory.LaboratoryAttachment;
 import prototype2.attachment.miner.MinerAttachment;
 import prototype2.attachment.miner.MinerDispersionAttachment;
+import prototype2.attachment.sage.SageAttackAttachment;
+import prototype2.attachment.sage.SageMicroAttachment;
 import prototype2.attachment.soldier.SoldierMacroAttachment;
 import prototype2.attachment.soldier.SoldierMicroAttachment;
 
@@ -40,6 +43,11 @@ public class RobotBuilder {
                 robot.addAttachment(new MinerAttachment(robot));
                 robot.addAttachment(new MinerDispersionAttachment(robot));
                 break;
+            case SAGE:
+                robot.addAttachment(new SacrificeWhenLowAttachment(robot));
+                robot.addAttachment(new SageMicroAttachment(robot));
+                robot.addAttachment(new SoldierMacroAttachment(robot));
+                break;
             case SOLDIER:
                 robot.addAttachment(new AttackAttachment(robot));
                 robot.addAttachment(new SacrificeWhenLowAttachment(robot));
@@ -51,6 +59,8 @@ public class RobotBuilder {
                 robot.addAttachment(new BuilderAttachment(robot));
             case WATCHTOWER:
                 robot.addAttachment(new AttackAttachment(robot));
+            case LABORATORY:
+                robot.addAttachment(new LaboratoryAttachment(robot));
         }
     }
 }

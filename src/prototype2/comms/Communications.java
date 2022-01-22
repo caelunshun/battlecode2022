@@ -342,6 +342,14 @@ public final class Communications {
         }
     }
 
+    public int getBuildIndex() throws GameActionException {
+        return rc.readSharedArray(63);
+    }
+
+    public void setBuildIndex(int index) throws GameActionException {
+        rc.writeSharedArray(63, index);
+    }
+
     private boolean isSlotFree(int index) throws GameActionException {
         return rc.readSharedArray(index * 2) == 0;
     }

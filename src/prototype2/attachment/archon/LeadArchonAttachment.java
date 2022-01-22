@@ -24,7 +24,6 @@ public class LeadArchonAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         rc.setIndicatorString("Lead Archon");
-        build();
         incrementBuildWeights();
 
         robot.getComms().clearRobotCounts();
@@ -33,7 +32,7 @@ public class LeadArchonAttachment extends Attachment {
     private void incrementBuildWeights() throws GameActionException {
         buildTables.addWeight(LeadBuild.SOLDIER, 20);
 
-        buildTables.addWeight(LeadBuild.MINER, 5);
+        buildTables.addWeight(LeadBuild.MINER, 10);
         if (robot.getComms().getNumRobots(RobotCategory.MINER) < BotConstants.MIN_MINERS) {
             buildTables.addWeight(LeadBuild.MINER, 20);
         }
@@ -42,12 +41,19 @@ public class LeadArchonAttachment extends Attachment {
             buildTables.addWeight(LeadBuild.BUILDER, 10);
         }
         if (robot.getComms().getNumRobots(RobotCategory.BUILDER) > 0) {
-            buildTables.addWeight(LeadBuild.WATCHTOWER, 10);
+            //buildTables.addWeight(LeadBuild.WATCHTOWER, 5);
         } else {
             buildTables.clearWeight(LeadBuild.WATCHTOWER);
             if (robot.getComms().getLeadBuild() == LeadBuild.WATCHTOWER) {
                 robot.getComms().setLeadBuild(null);
             }
+        }
+
+        if (robot.getComms().getNumRobots(RobotCategory.LABORATORY) < BotConstants.MIN_LABS
+            && robot.getComms().getNumRobots(RobotCategory.BUILDER) > 0) {
+            buildTables.addWeight(LeadBuild.LABORATORY, 6);
+        } else {
+            buildTables.clearWeight(LeadBuild.LABORATORY);
         }
 
         buildTables.addWeight(GoldBuild.SAGE, 10);
@@ -62,29 +68,5 @@ public class LeadArchonAttachment extends Attachment {
             robot.getComms().setGoldBuild(build);
             buildTables.clearWeight(build);
         }
-    }
-
-    private void build() throws GameActionException {
-        GoldBuild goldBuild = robot.getComms().getGoldBuild();
-        if (goldBuild != null) {
-            RobotType goldType = goldBuild.getType();
-            if (goldType != null && rc.getType().canBuild(goldType)) {
-                if (robot.getAttachment(BaseArchonAttachment.class).tryBuild(goldType)) {
-                    robot.getComms().setGoldBuild(null);
-                }
-            }
-        }
-
-        LeadBuild leadBuild = robot.getComms().getLeadBuild();
-        if (leadBuild != null) {
-            RobotType leadType = leadBuild.getType();
-            if (leadType != null && rc.getType().canBuild(leadType)) {
-                if (robot.getAttachment(BaseArchonAttachment.class).tryBuild(leadType)) {
-                    robot.getComms().setLeadBuild(null);
-                }
-            }
-        }
-
-        rc.setIndicatorString("Builds: " + leadBuild + " / " + goldBuild);
     }
 }

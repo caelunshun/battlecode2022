@@ -7,6 +7,8 @@ import prototype2.Robot;
 import prototype2.build.LeadBuild;
 import prototype2.nav.Navigator;
 
+import java.util.Arrays;
+
 public class BuilderAttachment extends Attachment {
     private final Navigator nav;
     private MapLocation watchtowerTarget;
@@ -19,12 +21,41 @@ public class BuilderAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         if (!repairBuildings()) {
-            if (!buildWatchtowers()) {
+            if (!buildLaboratory() && !buildWatchtowers()) {
                 if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) <= 4) {
                     nav.advanceToward(Util.getCenterLocation(rc));
                 }
             }
         }
+    }
+
+    private boolean buildLaboratory() throws GameActionException {
+        if (robot.getComms().getLeadBuild() != LeadBuild.LABORATORY) return false;
+
+        MapLocation[] corners = new MapLocation[]{
+            new MapLocation(0, 0),
+            new MapLocation(rc.getMapWidth() - 1, 0),
+                new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 1),
+                new MapLocation(0, rc.getMapHeight() - 1),
+        };
+        MapLocation target = Util.getClosest(rc.getLocation(), Arrays.asList(corners));
+        while (rc.canSenseLocation(target) && rc.canSenseRobotAtLocation(target)) {
+            target = target.add(target.directionTo(Util.getCenterLocation(rc)));
+        }
+
+        if (rc.getLocation().equals(target)) {
+            robot.moveRandom();
+        } else if (rc.getLocation().isAdjacentTo(target)) {
+            Direction dir = rc.getLocation().directionTo(target);
+            if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
+                rc.buildRobot(RobotType.LABORATORY, dir);
+                robot.getComms().setLeadBuild(null);
+            }
+        } else {
+            nav.advanceToward(target);
+        }
+
+        return true;
     }
 
     private boolean buildWatchtowers() throws GameActionException {

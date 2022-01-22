@@ -26,6 +26,7 @@ public class SacrificeWhenLowAttachment extends Attachment {
             } else {
                 MapLocation sacrificeLoc = getSacrificeLocation();
                 if (rc.getLocation().equals(sacrificeLoc)) {
+                    if (rc.getType().buildCostGold > 0) return;
                     rc.disintegrate(); // Que Descanse En Paz
                 } else {
                     nav.advanceToward(sacrificeLoc);

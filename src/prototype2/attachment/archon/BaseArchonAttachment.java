@@ -5,6 +5,8 @@ import prototype1.Util;
 import prototype2.Attachment;
 import prototype2.BotConstants;
 import prototype2.Robot;
+import prototype2.build.GoldBuild;
+import prototype2.build.LeadBuild;
 import prototype2.comms.Archon;
 import prototype2.nav.Navigator;
 
@@ -45,9 +47,50 @@ public class BaseArchonAttachment extends Attachment {
         updateComms();
         healRobots();
         updateDispersionAngle();
+        build();
         if (inPregame) {
             doPregame();
         }
+    }
+
+    private int lastBuiltIndex = -100;
+
+    private void build() throws GameActionException {
+        int currentBuildIndex = robot.getComms().getBuildIndex();
+        if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1) {
+            // No need to balance builds if we have tons of lead.
+            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2) {
+                return;
+            }
+        }
+
+        GoldBuild goldBuild = robot.getComms().getGoldBuild();
+        if (goldBuild != null) {
+            RobotType goldType = goldBuild.getType();
+            if (goldType != null && rc.getType().canBuild(goldType)) {
+                if (robot.getAttachment(BaseArchonAttachment.class).tryBuild(goldType)) {
+                    robot.getComms().setGoldBuild(null);
+                    ++currentBuildIndex;
+                    robot.getComms().setBuildIndex(currentBuildIndex);
+                    lastBuiltIndex = currentBuildIndex;
+                }
+            }
+        }
+
+        LeadBuild leadBuild = robot.getComms().getLeadBuild();
+        if (leadBuild != null) {
+            RobotType leadType = leadBuild.getType();
+            if (leadType != null && rc.getType().canBuild(leadType)) {
+                if (robot.getAttachment(BaseArchonAttachment.class).tryBuild(leadType)) {
+                    robot.getComms().setLeadBuild(null);
+                    ++currentBuildIndex;
+                    robot.getComms().setBuildIndex(currentBuildIndex);
+                    lastBuiltIndex = currentBuildIndex;
+                }
+            }
+        }
+
+        rc.setIndicatorString("Builds: " + leadBuild + " / " + goldBuild);
     }
 
     private void doPregame() throws GameActionException {
@@ -56,9 +99,14 @@ public class BaseArchonAttachment extends Attachment {
                 ++minersBuilt;
             }
         } else {
+            inPregame = false;
             MapLocation targetArchon = getUnionArchon();
             if (targetArchon.equals(rc.getLocation())) {
                 promoteToLeader();
+            }
+            /*
+            if (targetArchon.equals(rc.getLocation())) {
+
                 inPregame = false;
             } else if (rc.getLocation().distanceSquaredTo(targetArchon) <= 15) {
                 if (rc.getMode() == RobotMode.TURRET || tryTransform()) {
@@ -69,7 +117,7 @@ public class BaseArchonAttachment extends Attachment {
                     tryTransform();
                 }
                 nav.advanceToward(targetArchon);
-            }
+            }*/
         }
     }
 
