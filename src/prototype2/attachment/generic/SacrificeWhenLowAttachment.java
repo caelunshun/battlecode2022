@@ -41,6 +41,7 @@ public class SacrificeWhenLowAttachment extends Attachment {
         double bestScore = 0;
         for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().visionRadiusSquared)) {
             if (rc.senseRobotAtLocation(loc) == null) continue;
+            if (rc.senseLead(loc) > 0) continue;
             double score = 0;
             score += Math.sqrt(loc.distanceSquaredTo(robot.getHomeArchon()));
             score += 0.2 * rc.senseRubble(loc);

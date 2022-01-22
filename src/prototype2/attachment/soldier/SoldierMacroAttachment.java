@@ -11,13 +11,10 @@ import prototype2.comms.EnemySpottedLocation;
 import prototype2.SymmetryType;
 import prototype2.nav.Navigator;
 
+import java.util.Arrays;
+
 public class SoldierMacroAttachment extends Attachment {
     private final Navigator nav;
-
-    // states reset each round
-    int distanceToNearestFriendlyArchon;
-    // -1 if no enemy archons are known
-    int distanceToNearestEnemyArchon;
 
     public SoldierMacroAttachment(Robot robot) {
         super(robot);
@@ -27,7 +24,6 @@ public class SoldierMacroAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         if (!rc.isMovementReady()) return;
-        updateStates();
 
         if (!followCallsForHelp()) {
             if (!followEnemyLocations()) {
@@ -36,30 +32,13 @@ public class SoldierMacroAttachment extends Attachment {
         }
     }
 
-    private void updateStates() throws GameActionException {
-        distanceToNearestFriendlyArchon = Integer.MAX_VALUE;
-        distanceToNearestEnemyArchon = Integer.MAX_VALUE;
-        for (Archon friendly : robot.getFriendlyArchons()) {
-            if (rc.getLocation().distanceSquaredTo(friendly.loc) < distanceToNearestFriendlyArchon) {
-                distanceToNearestFriendlyArchon = rc.getLocation().distanceSquaredTo(friendly.loc);
-            }
-        }
-        for (MapLocation enemy : robot.getEnemyArchons()) {
-            if (rc.getLocation().distanceSquaredTo(enemy) < distanceToNearestEnemyArchon) {
-                distanceToNearestEnemyArchon = rc.getLocation().distanceSquaredTo(enemy);
-            }
-        }
-
-        if (robot.getEnemyArchons().isEmpty()) distanceToNearestEnemyArchon = -1;
-    }
-
     private boolean followEnemyLocations() throws GameActionException {
         EnemySpottedLocation[] enemies = robot.getComms().getEnemySpottedLocations();
+        rc.setIndicatorString(Arrays.toString(enemies));
         MapLocation closest = null;
         for (EnemySpottedLocation enemy : enemies) {
             if (enemy != null
-                && (closest == null || closest.distanceSquaredTo(rc.getLocation()) > enemy.loc.distanceSquaredTo(rc.getLocation()))
-                && rc.getRoundNum() - enemy.roundNumber <= 3) {
+                && (closest == null || closest.distanceSquaredTo(rc.getLocation()) > enemy.loc.distanceSquaredTo(rc.getLocation()))) {
                 closest = enemy.loc;
             }
         }
@@ -88,7 +67,7 @@ public class SoldierMacroAttachment extends Attachment {
         }
 
         nav.advanceToward(loc);
-        rc.setIndicatorString("[Macro] Advancing To Enemy Archon: " + loc);
+        //rc.setIndicatorString("[Macro] Advancing To Enemy Archon: " + loc);
     }
 
 

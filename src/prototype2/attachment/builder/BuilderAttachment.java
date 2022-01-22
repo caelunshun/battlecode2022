@@ -22,9 +22,7 @@ public class BuilderAttachment extends Attachment {
     public void doTurn() throws GameActionException {
         if (!repairBuildings()) {
             if (!buildLaboratory() && !buildWatchtowers()) {
-                if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) <= 4) {
-                    nav.advanceToward(Util.getCenterLocation(rc));
-                }
+                robot.moveRandom();
             }
         }
     }
@@ -41,6 +39,19 @@ public class BuilderAttachment extends Attachment {
         MapLocation target = Util.getClosest(rc.getLocation(), Arrays.asList(corners));
         while (rc.canSenseLocation(target) && rc.canSenseRobotAtLocation(target)) {
             target = target.add(target.directionTo(Util.getCenterLocation(rc)));
+        }
+
+        if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) >= 64) {
+            for (Direction dir : Util.DIRECTIONS) {
+                MapLocation loc = rc.getLocation().add(dir);
+                if (rc.senseRubble(loc) <= 20) {
+                    if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
+                        rc.buildRobot(RobotType.LABORATORY, dir);
+                        robot.getComms().setLeadBuild(null);
+                        return true;
+                    }
+                }
+            }
         }
 
         if (rc.getLocation().equals(target)) {

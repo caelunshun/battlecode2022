@@ -192,7 +192,7 @@ public final class Communications {
         if (clearSpotted(loc.loc)) return;
 
         int free = -1;
-        for (int i = SEGMENT_CRIES_FOR_HELP.start; i < SEGMENT_CRIES_FOR_HELP.end; i++) {
+        for (int i = SEGMENT_ENEMY_ARCHONS.start; i < SEGMENT_ENEMY_ARCHONS.end; i++) {
             if (isSlotFree(i)) {
                 free = i;
                 break;
@@ -211,11 +211,11 @@ public final class Communications {
         EnemySpottedLocation[] locs = getEnemySpottedLocations();
         for (int i = 0; i < locs.length; i++) {
             if (locs[i] != null) {
-                if (locs[i].loc.distanceSquaredTo(enemyLoc) <= 9) {
-                    return true;
-                } else if (rc.getRoundNum() - locs[i].roundNumber > 3) {
-                    clearSlot(SEGMENT_CRIES_FOR_HELP.start + i);
+                if (rc.getRoundNum() - locs[i].roundNumber > 3) {
+                    clearSlot(SEGMENT_ENEMY_ARCHONS.start + i);
                     return false;
+                } else if (locs[i].loc.distanceSquaredTo(enemyLoc) <= 9) {
+                    return true;
                 }
             } else {
                 return false;
