@@ -36,7 +36,7 @@ public final class Communications {
     private static final Range SEGMENT_DISPERSION_ANGLES = new Range(16, 20);
     private static final int LEAD_COUNTER = 20;
     private static final Range ENEMY_SPOTTED_LOCATIONS = new Range(21, 23);
-    private static final Range ROBOT_COUNTS = new Range(23, 31);
+    private static final Range ROBOT_COUNTS = new Range(23, 25);
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -296,13 +296,11 @@ public final class Communications {
     }
 
     public int getNumRobots(RobotCategory category) throws GameActionException {
-        int slot = ROBOT_COUNTS.start + category.ordinal();
-        if (isSlotFree(slot)) return 0;
-        return readSlot(slot);
+        return readSlotEightBits(category.ordinal());
     }
 
     public void incrementNumRobots(RobotCategory category) throws GameActionException {
-        int count = getNumRobots(category);
+        int count = readSlotEightBits(category.ordinal());
         setNumRobots(category, count + 1);
     }
 
@@ -313,8 +311,11 @@ public final class Communications {
     }
 
     private void setNumRobots(RobotCategory category, int amount) throws GameActionException {
-        writeSlot(ROBOT_COUNTS.start + category.ordinal(), amount);
+        writeSlotEightBits(category.ordinal(), amount);
+        System.out.println("expected: " + amount + " reality: " + readSlotEightBits(category.ordinal()));
     }
+
+
 
     public LeadBuild getLeadBuild() throws GameActionException {
         if (isSlotFree(LEAD_BUILD)) return null;
@@ -367,5 +368,72 @@ public final class Communications {
     private void writeSlot(int index, int value) throws GameActionException  {
         rc.writeSharedArray(index * 2, (value & 0xFFFF) + 1);
         rc.writeSharedArray(index * 2 + 1, ((value >>> 16) & 0xFFFF) + 1);
+    }
+
+    public void writeSlotEightBits(int slot, int amount) throws GameActionException{
+        if(amount > 255){
+            throw new RuntimeException("more than 255 of robot type");
+        }
+        if(isSlotFree(ROBOT_COUNTS.start)){
+            writeSlot(ROBOT_COUNTS.start, 0);
+        }
+        if(isSlotFree(ROBOT_COUNTS.start + 1)){
+            writeSlot(ROBOT_COUNTS.start+1, 0);
+        }
+        switch(slot){
+            case 0:
+                writeSlot(ROBOT_COUNTS.start, ((0xFFFFFF00 & (readSlot(ROBOT_COUNTS.start))) | amount   ));
+                break;
+            case 1:
+                writeSlot(ROBOT_COUNTS.start, ((0xFFFF00FF & (readSlot(ROBOT_COUNTS.start))) ) | (amount<<8)   );
+                break;
+            case 2:
+                writeSlot(ROBOT_COUNTS.start, ((0xFF00FFFF & (readSlot(ROBOT_COUNTS.start))) | (amount<<16)   ));
+                break;
+            case 3:
+                writeSlot(ROBOT_COUNTS.start, ((0x00FFFFFF & (readSlot(ROBOT_COUNTS.start))) | (amount<<24)   ));
+                break;
+            case 4:
+                writeSlot(ROBOT_COUNTS.start + 1, ((0xFFFFFF00 & (readSlot(ROBOT_COUNTS.start + 1))) | amount   ));
+                break;
+            case 5:
+                writeSlot(ROBOT_COUNTS.start + 1, ((0xFFFF00FF & (readSlot(ROBOT_COUNTS.start + 1))) | (amount<<8)   ));
+                break;
+            case 6:
+                writeSlot(ROBOT_COUNTS.start + 1, ((0xFF00FFFF & (readSlot(ROBOT_COUNTS.start + 1))) | (amount<<16)   ));
+                break;
+            case 7:
+                writeSlot(ROBOT_COUNTS.start + 1, ((0x00FFFFFF & (readSlot(ROBOT_COUNTS.start + 1))) | (amount<<24)   ));
+                break;
+
+        }
+    }
+    public int readSlotEightBits(int slot) throws GameActionException{
+
+        if(isSlotFree(ROBOT_COUNTS.start)){
+            writeSlot(ROBOT_COUNTS.start, 0);
+        }
+        if(isSlotFree(ROBOT_COUNTS.start + 1)){
+            writeSlot(ROBOT_COUNTS.start+1, 0);
+        }
+        switch(slot){
+            case 0:
+                return (0xFF & readSlot(ROBOT_COUNTS.start));
+            case 1:
+                return (0xFF00 & readSlot(ROBOT_COUNTS.start))>>>8;
+            case 2:
+                return (0xFF0000 & readSlot(ROBOT_COUNTS.start))>>>16;
+            case 3:
+                return (0xFF000000 & readSlot(ROBOT_COUNTS.start))>>>24;
+            case 4:
+                return (0xFF & readSlot(ROBOT_COUNTS.start + 1));
+            case 5:
+                return (0xFF00 & readSlot(ROBOT_COUNTS.start + 1))>>>8;
+            case 6:
+                return (0xFF0000 & readSlot(ROBOT_COUNTS.start + 1))>>>16;
+            case 7:
+                return (0xFF000000 & readSlot(ROBOT_COUNTS.start + 1))>>>24;
+        }
+        throw new RuntimeException("lol slot is 0-7");
     }
 }

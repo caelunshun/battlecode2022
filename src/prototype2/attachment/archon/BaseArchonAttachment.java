@@ -90,7 +90,7 @@ public class BaseArchonAttachment extends Attachment {
             }
         }
 
-        rc.setIndicatorString("Builds: " + leadBuild + " / " + goldBuild);
+        //rc.setIndicatorString("Builds: " + leadBuild + " / " + goldBuild);
     }
 
     private void doPregame() throws GameActionException {
@@ -165,7 +165,7 @@ public class BaseArchonAttachment extends Attachment {
         Direction dir = getAvailableBuildDirection(type);
         if (rc.canBuildRobot(type, dir)) {
             rc.buildRobot(type, dir);
-            rc.setIndicatorString("Built a " + type);
+            //rc.setIndicatorString("Built a " + type);
             return true;
         }
         return false;
@@ -264,7 +264,7 @@ public class BaseArchonAttachment extends Attachment {
         }
 
         robot.getComms().setDispersionAngle(archonIndex, angle);
-        rc.setIndicatorString("Dispersion Angle: " + Math.toDegrees(angle));
+       // rc.setIndicatorString("Dispersion Angle: " + Math.toDegrees(angle));
         usedDispersionAngles.add(angle);
     }
 

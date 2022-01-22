@@ -12,8 +12,12 @@ import prototype2.build.BuildTables;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;
 
+
 import java.util.ArrayList;
 import java.util.List;
+
+import java.util.Arrays;
+
 
 /**
  * Attachment for the lead archon - the archon
@@ -21,15 +25,20 @@ import java.util.List;
  */
 public class LeadArchonAttachment extends Attachment {
     private final BuildTables buildTables = new BuildTables();
+    int[] lastLeadAmounts;
+    private int lastRoundLead;
 
     private SymmetryType symmetry;
 
     public LeadArchonAttachment(Robot robot) {
         super(robot);
+        lastLeadAmounts = new int[5];
     }
 
     @Override
     public void doTurn() throws GameActionException {
+        System.arraycopy(lastLeadAmounts, 0,lastLeadAmounts,1,4);
+        lastLeadAmounts[0] = getRoundLead();
         rc.setIndicatorString("Lead Archon");
         incrementBuildWeights();
 
@@ -37,7 +46,13 @@ public class LeadArchonAttachment extends Attachment {
             computeSymmetry();
         }
 
+
+        rc.setIndicatorString(robot.getComms().getNumRobots(RobotCategory.MINER) + " " + robot.getComms().getNumRobots(RobotCategory.SOLDIER) + " " + robot.getComms().getNumRobots(RobotCategory.BUILDER) + " " + robot.getComms().getNumRobots(RobotCategory.SAGE) + " " + robot.getComms().getNumRobots(RobotCategory.WATCHTOWER_L3)  );
+
         robot.getComms().clearRobotCounts();
+        setLastRoundLead();
+
+
     }
 
     private void incrementBuildWeights() throws GameActionException {
@@ -80,6 +95,7 @@ public class LeadArchonAttachment extends Attachment {
             buildTables.clearWeight(build);
         }
     }
+
 
 
     List<MapLocation> initialEnemyArchons = new ArrayList<>();
@@ -139,5 +155,12 @@ public class LeadArchonAttachment extends Attachment {
                 robot.update();
             }
         }
+    }
+
+    public int getRoundLead() throws GameActionException{
+        return robot.getComms().getTurnLeadAmount() - lastRoundLead;
+    }
+    public void setLastRoundLead() throws GameActionException{
+        lastRoundLead = robot.getComms().getTurnLeadAmount();
     }
 }
