@@ -4,6 +4,7 @@ import battlecode.common.*;
 import prototype2.Attachment;
 import prototype2.Robot;
 import prototype2.Util;
+import prototype2.comms.CryForHelp;
 import prototype2.nav.Navigator;
 
 public class SageMicroAttachment extends Attachment {
@@ -16,6 +17,7 @@ public class SageMicroAttachment extends Attachment {
     private int numEnemies;
     private int numEnemiesAtEdgeOfVision;
     private int numCloseEnemies;
+    private int numFriendlies;
     private RobotInfo closestEnemy;
 
     public SageMicroAttachment(Robot robot) {
@@ -39,6 +41,7 @@ public class SageMicroAttachment extends Attachment {
         numEnemiesAtEdgeOfVision = 0;
         closestEnemy = null;
         numCloseEnemies = 0;
+        numFriendlies = 0;
 
         for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
             ++numEnemies;
@@ -50,6 +53,13 @@ public class SageMicroAttachment extends Attachment {
             }
             if (closestEnemy == null || info.location.distanceSquaredTo(rc.getLocation()) < closestEnemy.location.distanceSquaredTo(rc.getLocation())) {
                 closestEnemy = info;
+            }
+         }
+
+         if (closestEnemy == null) return;
+         for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
+            if (info.location.distanceSquaredTo(closestEnemy.location) <= 36) {
+                ++numFriendlies;
             }
          }
     }
@@ -66,10 +76,17 @@ public class SageMicroAttachment extends Attachment {
             return;
         }
 
-        advance();
+        if (numFriendlies >= 3) {
+            advance();
+        }
+
         if (numEnemiesAtEdgeOfVision <= 1 || numCloseEnemies >= 2) {
             attack.doTurn();
             retreat();
+        }
+
+        if (numEnemies > 2) {
+            issueCryForHelp();
         }
     }
 
@@ -115,5 +132,10 @@ public class SageMicroAttachment extends Attachment {
             }
         }
         return best;
+    }
+
+    private void issueCryForHelp() throws GameActionException {
+        CryForHelp cry = new CryForHelp(closestEnemy.location, numEnemies, rc.getRoundNum());
+        robot.getComms().addCryForHelp(cry);
     }
 }
