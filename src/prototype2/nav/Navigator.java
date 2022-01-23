@@ -15,11 +15,15 @@ public final class Navigator {
 
     private MapLocation target;
 
+    private int rubbleThreshold = 50;
+
     public Navigator(Robot robot) {
         this.robot = robot;
     }
 
     public void advanceToward(MapLocation location) throws GameActionException {
+        if (!robot.getRc().isMovementReady()) return;
+
         if (!location.equals(target)) {
             reset(location);
         }
@@ -40,7 +44,7 @@ public final class Navigator {
 
             int dist = target.distanceSquaredTo(location);
             int rubble = robot.getRc().senseRubble(target);
-            if (rubble > 50) continue;
+            if (rubble > rubbleThreshold) continue;
             int rubbleFactor = (int) (rubble * 0.15);
             int score = dist + rubbleFactor;
             if ((score < bestScore || bestDir == null) && robot.getRc().canMove(dir)) {
@@ -62,6 +66,8 @@ public final class Navigator {
             if (visitedCursor == visited.length) {
                 visitedCursor = 0;
             }
+        } else {
+            rubbleThreshold += 10;
         }
     }
 
