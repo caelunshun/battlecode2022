@@ -310,14 +310,16 @@ public final class Communications {
         for (RobotCategory cat : RobotCategory.values()) {
             setNumRobots(cat, 0);
         }
+        System.out.println("ROUND " + rc.getRoundNum() + ": Builders cleared");
     }
 
     private void setNumRobots(RobotCategory category, int amount) throws GameActionException {
         writeSlotEightBits(category.ordinal(), amount);
-        System.out.println("expected: " + amount + " reality: " + readSlotEightBits(category.ordinal()));
+
+        if (category == RobotCategory.BUILDER) {
+            System.out.println("ROUND " + rc.getRoundNum() + ": Builders set to " + amount);
+        }
     }
-
-
 
     public LeadBuild getLeadBuild() throws GameActionException {
         if (isSlotFree(LEAD_BUILD)) return null;

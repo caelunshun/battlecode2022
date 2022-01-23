@@ -20,8 +20,9 @@ public class BuilderAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        if (!repairBuildings()) {
+        if (!repairWatchtowers()) {
             if (!buildLaboratory() && !buildWatchtowers()) {
+                repairBuildings();
                 robot.moveRandom();
             }
         }
@@ -82,6 +83,7 @@ public class BuilderAttachment extends Attachment {
 
         if (rc.getLocation().isAdjacentTo(watchtowerTarget)) {
             Direction dir = rc.getLocation().directionTo(watchtowerTarget);
+            rc.setIndicatorString("building in " + dir);
             if (rc.canBuildRobot(RobotType.WATCHTOWER, dir)) {
                 rc.buildRobot(RobotType.WATCHTOWER, dir);
                 robot.getComms().setLeadBuild(null); // completed build
@@ -119,6 +121,10 @@ public class BuilderAttachment extends Attachment {
                 best = loc;
                 bestScore = score;
             }
+
+            if (Clock.getBytecodesLeft() < 2000) {
+                break;
+            }
         }
         return best;
     }
@@ -127,15 +133,13 @@ public class BuilderAttachment extends Attachment {
         return loc.x % 2 == loc.y % 2;
     }
 
-    private boolean repairBuildings() throws GameActionException {
+    private boolean repairWatchtowers() throws GameActionException {
         RobotInfo tower = null;
         for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
             if (!(tower == null || rc.getLocation().distanceSquaredTo(tower.location) > rc.getLocation().distanceSquaredTo(info.location))) {
                 continue;
             }
             if (info.mode == RobotMode.PROTOTYPE) {
-                tower = info;
-            } else if (info.health < info.type.getMaxHealth(info.level)) {
                 tower = info;
             }
         }
@@ -148,7 +152,28 @@ public class BuilderAttachment extends Attachment {
             } else if (rc.getLocation().distanceSquaredTo(tower.location) > rc.getType().actionRadiusSquared) {
                 nav.advanceToward(tower.location);
             }
-            return tower.mode == RobotMode.PROTOTYPE;
+            return true;
+        }
+    }
+
+    private void repairBuildings() throws GameActionException {
+        RobotInfo tower = null;
+        for (RobotInfo info : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam())) {
+            if (!(tower == null || rc.getLocation().distanceSquaredTo(tower.location) > rc.getLocation().distanceSquaredTo(info.location))) {
+                continue;
+            }
+            if (info.health < info.type.getMaxHealth(info.level)) {
+                tower = info;
+                break;
+            }
+        }
+
+        if (tower != null) {
+            if (rc.canRepair(tower.location)) {
+                rc.repair(tower.location);
+            } else if (rc.getLocation().distanceSquaredTo(tower.location) > rc.getType().actionRadiusSquared) {
+                nav.advanceToward(tower.location);
+            }
         }
     }
 }

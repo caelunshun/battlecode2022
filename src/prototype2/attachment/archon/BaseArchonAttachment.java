@@ -55,6 +55,10 @@ public class BaseArchonAttachment extends Attachment {
         if (!turtled && robot.getComms().getStrategy() == Strategy.TURTLE) {
             doTurtle();
         }
+
+        if (inPregame) {
+            robot.getComms().clearRobotCounts();
+        }
     }
 
     private int lastBuiltIndex = -100;

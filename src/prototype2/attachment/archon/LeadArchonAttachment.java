@@ -79,9 +79,7 @@ public class LeadArchonAttachment extends Attachment {
         }
 
         int numLeadCollected = getRoundLead();
-        if (numLeadCollected / 2 >= numMiners) {
-            areMinersSaturated = true;
-        }
+        areMinersSaturated = numLeadCollected / 2 >= numMiners;
     }
 
     private void incrementBuildWeights() throws GameActionException {
@@ -117,8 +115,9 @@ public class LeadArchonAttachment extends Attachment {
                 if (nearbyEnemies) {
                     weightBuilder = 10;
                 }
-                if (areMinersSaturated && rc.getRoundNum() > 300) {
-                    weightMiner = 3;
+                if ((areMinersSaturated || (lastLeadAmounts[0] < 2 && lastLeadAmounts[1] < 2 && lastLeadAmounts[2] < 2))
+                        && rc.getRoundNum() > 300) {
+                    weightMiner = 15;
                 }
                 if (numBuilders > 0) {
                     weightWatchtower = 15;
@@ -257,7 +256,7 @@ public class LeadArchonAttachment extends Attachment {
         if (rc.getRoundNum() < 25) return;
 
         Strategy strat;
-        if (totalLeadCollected < 200) {
+        if (totalLeadCollected < 400) {
             strat = Strategy.TURTLE;
         } else {
             strat = Strategy.RUSH;
