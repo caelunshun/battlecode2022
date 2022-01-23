@@ -1,13 +1,12 @@
-package prototype2.attachment.miner;
+package JFPROTO.miner;
 
 import battlecode.common.*;
-import prototype2.Attachment;
-import prototype2.Robot;
-import prototype2.Util;
-import prototype2.comms.Archon;
-import prototype2.comms.CryForHelp;
-import prototype2.nav.Navigator;
+import JFPROTO.Attachment;
+import JFPROTO.Robot;
+import JFPROTO.Util;
+import JFPROTO.nav.Navigator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MinerAttachment extends Attachment {
@@ -32,37 +31,26 @@ public class MinerAttachment extends Attachment {
         robot.getComms().addTurnLeadAmount(leadThisRound);
         if (moveTowardCloseLead() || moveTowardFarLead()) {
             robot.endTurn();
-        }//issueCryForHelp();
+        }
     }
 
     private boolean flee() throws GameActionException {
         if (!rc.isMovementReady()) return false;
-        if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) <= 25) {
-            return false;
-        }
 
         double vx = 0;
         double vy = 0;
-        int numEnemies = 0;
-        int numFriendlies = 0;
-        for (RobotInfo nearby : rc.senseNearbyRobots()) {
+        for (RobotInfo nearby : rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())) {
             if (nearby.type.canAttack()) {
-                if (nearby.team == rc.getTeam()) {
-                    ++numFriendlies;
-                } else {
-                    double dx = rc.getLocation().x - nearby.location.x;
-                    double dy = rc.getLocation().y - nearby.location.y;
-                    double len = Math.hypot(dx, dy);
-                    dx /= len;
-                    dy /= len;
-                    vx += dx;
-                    vy += dy;
-                    ++numEnemies;
-                }
+                double dx = rc.getLocation().x - nearby.location.x;
+                double dy = rc.getLocation().y - nearby.location.y;
+                double len = Math.hypot(dx, dy);
+                dx /= len;
+                dy /= len;
+                vx += dx;
+                vy += dy;
             }
         }
 
-        if (numFriendlies > numEnemies) return false;
         if (vx == 0 && vy == 0) return false;
 
         Direction dir = Util.getDirFromAngle(Math.atan2(vy, vx));
@@ -115,7 +103,7 @@ public class MinerAttachment extends Attachment {
 
             int score = rc.getLocation().distanceSquaredTo(leadLoc) - leadCount;
 
-            if ((bestLead == null || score < bestScore) && !isLeadOccupied(leadLoc)) {
+            if (bestLead == null || score < bestScore) {
                 bestLead = leadLoc;
                 bestScore = score;
             }
@@ -130,34 +118,14 @@ public class MinerAttachment extends Attachment {
         }
         return false;
     }
-    private boolean isLeadOccupied(MapLocation loc){
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
-        RobotInfo closest = null;
-        int bestDistanceSquared = 1000;
-
-        for (int i = 0; i < nearbyRobots.length; i++){
-            int currentRobotDistance = nearbyRobots[i].getLocation().distanceSquaredTo(loc);
-            if (bestDistanceSquared >= currentRobotDistance && nearbyRobots[i].getType() == RobotType.MINER){
-                bestDistanceSquared = currentRobotDistance;
-                closest = nearbyRobots[i];
-            }
-        }
-       if (rc.getLocation().distanceSquaredTo(loc) < bestDistanceSquared){
-           return false;
-       }
-       if (rc.getLocation().distanceSquaredTo(loc) == bestDistanceSquared && rc.getID() < closest.getID()){
-           return false;
-       }
-       return true;
-    }
     public boolean closerToEnemy(){
        List<MapLocation> enemy = robot.getEnemyArchons();
-       List<Archon> teamArchon = robot.getFriendlyArchons();
+       List<MapLocation> teamArchon = robot.getFriendlyArchons();
        if(enemy.size() == 0){
            return false;
        }
        int minDistance =  rc.getLocation().distanceSquaredTo(enemy.get(0));
-       int minDistanceTeam = rc.getLocation().distanceSquaredTo(teamArchon.get(0).loc);
+       int minDistanceTeam = rc.getLocation().distanceSquaredTo(teamArchon.get(0));
        for(int i = 0; i < enemy.size(); i++){
            int dist = rc.getLocation().distanceSquaredTo(enemy.get(i));
            if(dist < minDistance){
@@ -166,7 +134,7 @@ public class MinerAttachment extends Attachment {
        }
 
         for(int i = 0; i < teamArchon.size(); i++){
-            int dist = rc.getLocation().distanceSquaredTo(teamArchon.get(i).loc);
+            int dist = rc.getLocation().distanceSquaredTo(teamArchon.get(i));
             if(dist < minDistanceTeam){
                 minDistanceTeam = dist;
             }
@@ -204,32 +172,5 @@ public class MinerAttachment extends Attachment {
         }
 
         return false;
-    }
-
-    private void issueCryForHelp() throws GameActionException {
-        int numEnemies = 0;
-        MapLocation nearestEnemy = null;
-        int numFriendlies = 0;
-        for (RobotInfo info : rc.senseNearbyRobots()) {
-            if (info.type.canAttack()) {
-                if (info.team == rc.getTeam()) {
-                    ++numEnemies;
-                    if (nearestEnemy == null || rc.getLocation().distanceSquaredTo(nearestEnemy) > rc.getLocation().distanceSquaredTo(info.location)) {
-                        nearestEnemy = info.location;
-                    }
-                }
-            }
-        }
-        if (nearestEnemy == null) return;
-        for (RobotInfo info : rc.senseNearbyRobots(nearestEnemy.distanceSquaredTo(rc.getLocation()), rc.getTeam())) {
-            if (info.type.canAttack()) {
-                ++numFriendlies;
-            }
-        }
-
-        if (numFriendlies > numEnemies) {
-            CryForHelp cry = new CryForHelp(nearestEnemy, numEnemies,rc.getRoundNum());
-            robot.getComms().addCryForHelp(cry);
-        }
     }
 }
