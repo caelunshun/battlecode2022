@@ -5,6 +5,7 @@ import prototype1.Util;
 import prototype2.Attachment;
 import prototype2.BotConstants;
 import prototype2.Robot;
+import prototype2.Strategy;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;
 import prototype2.comms.Archon;
@@ -45,30 +46,41 @@ public class BaseArchonAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         updateComms();
+        build();
         healRobots();
         updateDispersionAngle();
-        build();
         if (inPregame) {
             doPregame();
+        }
+        if (!turtled && robot.getComms().getStrategy() == Strategy.TURTLE) {
+            doTurtle();
         }
     }
 
     private int lastBuiltIndex = -100;
+    private boolean isLead = false;
 
     private void build() throws GameActionException {
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1) {
             // No need to balance builds if we have tons of lead.
-            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2) {
+            if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2
+            && !(robot.getComms().getStrategy() == Strategy.TURTLE && isLead)) {
+                rc.setIndicatorString("Not Building");
                 return;
             }
+        }
+
+        if (robot.getComms().getStrategy() == Strategy.TURTLE && !isLead) {
+            rc.setIndicatorString("Not Building");
+            return;
         }
 
         GoldBuild goldBuild = robot.getComms().getGoldBuild();
         if (goldBuild != null) {
             RobotType goldType = goldBuild.getType();
             if (goldType != null && rc.getType().canBuild(goldType)) {
-                if (robot.getAttachment(BaseArchonAttachment.class).tryBuild(goldType)) {
+                if (tryBuild(goldType)) {
                     robot.getComms().setGoldBuild(null);
                     ++currentBuildIndex;
                     robot.getComms().setBuildIndex(currentBuildIndex);
@@ -81,7 +93,7 @@ public class BaseArchonAttachment extends Attachment {
         if (leadBuild != null) {
             RobotType leadType = leadBuild.getType();
             if (leadType != null && rc.getType().canBuild(leadType)) {
-                if (robot.getAttachment(BaseArchonAttachment.class).tryBuild(leadType)) {
+                if (tryBuild(leadType)) {
                     robot.getComms().setLeadBuild(null);
                     ++currentBuildIndex;
                     robot.getComms().setBuildIndex(currentBuildIndex);
@@ -89,8 +101,6 @@ public class BaseArchonAttachment extends Attachment {
                 }
             }
         }
-
-        //rc.setIndicatorString("Builds: " + leadBuild + " / " + goldBuild);
     }
 
     private void doPregame() throws GameActionException {
@@ -104,20 +114,24 @@ public class BaseArchonAttachment extends Attachment {
             if (targetArchon.equals(rc.getLocation())) {
                 promoteToLeader();
             }
-            /*
-            if (targetArchon.equals(rc.getLocation())) {
+        }
+    }
 
-                inPregame = false;
-            } else if (rc.getLocation().distanceSquaredTo(targetArchon) <= 15) {
-                if (rc.getMode() == RobotMode.TURRET || tryTransform()) {
-                    inPregame = false;
-                }
-            } else {
-                if (rc.getMode() == RobotMode.TURRET) {
-                    tryTransform();
-                }
-                nav.advanceToward(targetArchon);
-            }*/
+    private boolean turtled = false;
+
+    private void doTurtle() throws GameActionException {
+        MapLocation targetArchon = getUnionArchon();
+        if (targetArchon.equals(rc.getLocation())) {
+            turtled = true;
+        } else if (rc.getLocation().distanceSquaredTo(targetArchon) <= 15) {
+            if (rc.getMode() == RobotMode.TURRET || tryTransform()) {
+                turtled = true;
+            }
+        } else {
+            if (rc.getMode() == RobotMode.TURRET) {
+                tryTransform();
+            }
+            nav.advanceToward(targetArchon);
         }
     }
 
@@ -131,6 +145,7 @@ public class BaseArchonAttachment extends Attachment {
 
     private void promoteToLeader() {
         robot.addAttachment(0, new LeadArchonAttachment(robot));
+        isLead = true;
     }
 
     private MapLocation getUnionArchon() {
@@ -264,7 +279,6 @@ public class BaseArchonAttachment extends Attachment {
         }
 
         robot.getComms().setDispersionAngle(archonIndex, angle);
-       // rc.setIndicatorString("Dispersion Angle: " + Math.toDegrees(angle));
         usedDispersionAngles.add(angle);
     }
 

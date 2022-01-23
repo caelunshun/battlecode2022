@@ -2,21 +2,15 @@ package prototype2.attachment.archon;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
-import prototype2.SymmetryType;
-import prototype2.Attachment;
-import prototype2.BotConstants;
-import prototype2.Robot;
-import prototype2.RobotCategory;
+import prototype2.comms.CryForHelp;
+import prototype2.*;
 import prototype2.build.BuildTables;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;
-
+import prototype2.comms.EnemySpottedLocation;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import java.util.Arrays;
 
 
 /**
@@ -28,6 +22,8 @@ public class LeadArchonAttachment extends Attachment {
     int[] lastLeadAmounts;
     private int lastRoundLead;
 
+    private int totalLeadCollected;
+
     private SymmetryType symmetry;
 
     public LeadArchonAttachment(Robot robot) {
@@ -37,52 +33,131 @@ public class LeadArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        System.arraycopy(lastLeadAmounts, 0,lastLeadAmounts,1,4);
-        lastLeadAmounts[0] = getRoundLead();
-        rc.setIndicatorString("Lead Archon");
+        updateStates();
+        updateLeadAmounts();
         incrementBuildWeights();
 
-        if (symmetry == null) {
+        /*if (symmetry == null) {
             computeSymmetry();
-        }
-
-
-        rc.setIndicatorString(robot.getComms().getNumRobots(RobotCategory.MINER) + " " + robot.getComms().getNumRobots(RobotCategory.SOLDIER) + " " + robot.getComms().getNumRobots(RobotCategory.BUILDER) + " " + robot.getComms().getNumRobots(RobotCategory.SAGE) + " " + robot.getComms().getNumRobots(RobotCategory.WATCHTOWER_L3)  );
+        }*/
 
         robot.getComms().clearRobotCounts();
         setLastRoundLead();
+        setStrategy();
 
-
+        rc.setIndicatorString("Lead Archon. Strategy: " + robot.getComms().getStrategy() + " / Lead Build: " + robot.getComms().getLeadBuild());
     }
 
-    private void incrementBuildWeights() throws GameActionException {
-        buildTables.addWeight(LeadBuild.SOLDIER, 20);
+    // States reset each turn
+    private int numMiners;
+    private int numBuilders;
+    private int numLabs;
+    private int numWatchtowerL1s;
+    private int numWatchtowerL2s;
+    private boolean nearbyEnemies;
+    private boolean areMinersSaturated;
 
-        buildTables.addWeight(LeadBuild.MINER, 10);
-        if (robot.getComms().getNumRobots(RobotCategory.MINER) < BotConstants.MIN_MINERS) {
-            buildTables.addWeight(LeadBuild.MINER, 20);
-        }
+    private void updateStates() throws GameActionException {
+        numMiners = robot.getComms().getNumRobots(RobotCategory.MINER);
+        numBuilders = robot.getComms().getNumRobots(RobotCategory.BUILDER);
+        numLabs = robot.getComms().getNumRobots(RobotCategory.LABORATORY);
+        numWatchtowerL1s = robot.getComms().getNumRobots(RobotCategory.WATCHTOWER_L1);
+        numWatchtowerL2s = robot.getComms().getNumRobots(RobotCategory.WATCHTOWER_L2);
 
-        if (robot.getComms().getNumRobots(RobotCategory.BUILDER) < BotConstants.MIN_BUILDERS) {
-            buildTables.addWeight(LeadBuild.BUILDER, 10);
+        nearbyEnemies = false;
+        for (CryForHelp cry : robot.getComms().getCriesForHelp()) {
+            if (cry != null && cry.enemyLoc.distanceSquaredTo(rc.getLocation()) <= 100
+                    && rc.getRoundNum() - cry.roundNumber <= 2) {
+                nearbyEnemies = true;
+            }
         }
-        if (robot.getComms().getNumRobots(RobotCategory.BUILDER) > 0) {
-            //buildTables.addWeight(LeadBuild.WATCHTOWER, 5);
-        } else {
-            buildTables.clearWeight(LeadBuild.WATCHTOWER);
-            if (robot.getComms().getLeadBuild() == LeadBuild.WATCHTOWER) {
-                robot.getComms().setLeadBuild(null);
+        for (EnemySpottedLocation loc : robot.getComms().getEnemySpottedLocations()) {
+            if (loc != null && loc.loc.distanceSquaredTo(rc.getLocation()) <= 100
+                && rc.getRoundNum() - loc.roundNumber <= 2) {
+                nearbyEnemies = true;
             }
         }
 
-        if (robot.getComms().getNumRobots(RobotCategory.LABORATORY) < BotConstants.MIN_LABS
-            && robot.getComms().getNumRobots(RobotCategory.BUILDER) > 0) {
-            buildTables.addWeight(LeadBuild.LABORATORY, 6);
-        } else {
-            buildTables.clearWeight(LeadBuild.LABORATORY);
+        int numLeadCollected = getRoundLead();
+        if (numLeadCollected / 2 >= numMiners) {
+            areMinersSaturated = true;
+        }
+    }
+
+    private void incrementBuildWeights() throws GameActionException {
+        Strategy strat = robot.getComms().getStrategy();
+        boolean noStrat = strat == null;
+        if (noStrat) strat = Strategy.RUSH;
+
+        int weightSoldier = 0;
+        int weightMiner = 0;
+        int weightBuilder = 0;
+        int weightWatchtower = 0;
+        int weightLab = 0;
+        int weightSage = 0;
+
+        switch (strat) {
+            case RUSH:
+                weightSoldier = 20;
+                weightMiner = 10;
+                if (numBuilders < BotConstants.MIN_BUILDERS) {
+                    weightBuilder = 10;
+                }
+                if (numLabs < BotConstants.MIN_LABS
+                        && numBuilders > 0) {
+                    weightLab = 6;
+                }
+                weightSage = 10;
+                break;
+            case TURTLE:
+                if (nearbyEnemies) {
+                    weightSoldier = 10;
+                }
+                weightBuilder = 15;
+                if (nearbyEnemies) {
+                    weightBuilder = 10;
+                }
+                if (areMinersSaturated && rc.getRoundNum() > 300) {
+                    weightMiner = 3;
+                }
+                if (numBuilders > 0) {
+                    weightWatchtower = 15;
+                    if (rc.getTeamLeadAmount(rc.getTeam()) > 150) {
+                        weightWatchtower = 20;
+                    }
+                }
+                weightSage = 10;
+
+                if (rc.getTeamLeadAmount(rc.getTeam()) > 500 && numLabs < BotConstants.MIN_LABS
+                    && numBuilders > 0) {
+                    weightLab = 20;
+                }
+
+                break;
         }
 
-        buildTables.addWeight(GoldBuild.SAGE, 10);
+        if (noStrat) {
+            weightLab = 0;
+        }
+
+        if (numMiners < BotConstants.MIN_MINERS) {
+            weightMiner = 20;
+        }
+
+        buildTables.addWeight(LeadBuild.MINER, weightMiner);
+        buildTables.addWeight(LeadBuild.SOLDIER, weightSoldier);
+        buildTables.addWeight(LeadBuild.BUILDER, weightBuilder);
+        buildTables.addWeight(LeadBuild.LABORATORY, weightLab);
+        buildTables.addWeight(LeadBuild.WATCHTOWER, weightWatchtower);
+        buildTables.addWeight(GoldBuild.SAGE, weightSage);
+
+        // Prevent waiting to build watchtower/lab when we have no builders
+        if (weightLab == 0) {
+            clearWeight(LeadBuild.LABORATORY);
+        }
+        if (weightWatchtower == 0) {
+            clearWeight(LeadBuild.WATCHTOWER);
+        }
 
         if (robot.getComms().getLeadBuild() == null) {
             LeadBuild build = buildTables.getHighestLeadWeight();
@@ -96,7 +171,12 @@ public class LeadArchonAttachment extends Attachment {
         }
     }
 
-
+    private void clearWeight(LeadBuild build) throws GameActionException {
+        buildTables.clearWeight(build);
+        if (robot.getComms().getLeadBuild() == build) {
+            robot.getComms().setLeadBuild(null);
+        }
+    }
 
     List<MapLocation> initialEnemyArchons = new ArrayList<>();
     List<MapLocation> initialFriendlyArchons = new ArrayList<>();
@@ -157,10 +237,32 @@ public class LeadArchonAttachment extends Attachment {
         }
     }
 
-    public int getRoundLead() throws GameActionException{
+    private void updateLeadAmounts() throws GameActionException {
+        System.arraycopy(lastLeadAmounts, 0, lastLeadAmounts, 1, 4);
+        lastLeadAmounts[0] = getRoundLead();
+    }
+
+    public int getRoundLead() throws GameActionException {
         return robot.getComms().getTurnLeadAmount() - lastRoundLead;
     }
-    public void setLastRoundLead() throws GameActionException{
+
+    public void setLastRoundLead() throws GameActionException {
         lastRoundLead = robot.getComms().getTurnLeadAmount();
+        totalLeadCollected = lastRoundLead;
+    }
+
+    private void setStrategy() throws GameActionException {
+        if (robot.getComms().getStrategy() != null) return;
+
+        if (rc.getRoundNum() < 25) return;
+
+        Strategy strat;
+        if (totalLeadCollected < 200) {
+            strat = Strategy.TURTLE;
+        } else {
+            strat = Strategy.RUSH;
+        }
+
+        robot.getComms().setStrategy(strat);
     }
 }

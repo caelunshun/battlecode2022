@@ -3,6 +3,7 @@ package prototype2.attachment.miner;
 import battlecode.common.*;
 import prototype2.Attachment;
 import prototype2.Robot;
+import prototype2.Strategy;
 import prototype2.Util;
 import prototype2.comms.Archon;
 import prototype2.comms.CryForHelp;
@@ -32,7 +33,13 @@ public class MinerAttachment extends Attachment {
         robot.getComms().addTurnLeadAmount(leadThisRound);
         if (moveTowardCloseLead() || moveTowardFarLead()) {
             robot.endTurn();
-        }//issueCryForHelp();
+        } else if (robot.getComms().getStrategy() == Strategy.TURTLE) {
+            if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) > 4) {
+                nav.advanceToward(robot.getHomeArchon());
+            } else {
+                robot.moveRandom();
+            }
+        }
     }
 
     private boolean flee() throws GameActionException {

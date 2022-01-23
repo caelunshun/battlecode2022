@@ -4,6 +4,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import prototype2.RobotCategory;
+import prototype2.Strategy;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;
 import prototype2.SymmetryType;
@@ -37,6 +38,7 @@ public final class Communications {
     private static final int LEAD_COUNTER = 20;
     private static final Range ENEMY_SPOTTED_LOCATIONS = new Range(21, 23);
     private static final Range ROBOT_COUNTS = new Range(23, 25);
+    private static final int STRATEGY = 25;
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -349,6 +351,15 @@ public final class Communications {
 
     public void setBuildIndex(int index) throws GameActionException {
         rc.writeSharedArray(63, index);
+    }
+
+    public Strategy getStrategy() throws GameActionException {
+        if (isSlotFree(STRATEGY)) return null;
+        return Strategy.values()[readSlot(STRATEGY)];
+    }
+
+    public void setStrategy(Strategy strat) throws GameActionException {
+        writeSlot(STRATEGY, strat.ordinal());
     }
 
     private boolean isSlotFree(int index) throws GameActionException {

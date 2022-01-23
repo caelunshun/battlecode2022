@@ -16,7 +16,7 @@ public class SacrificeWhenLowAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
-        if (rc.getHealth() > 40) {
+        if (rc.getHealth() >= 40) {
             sack = false;
         }
         if (rc.getHealth() < 20 || sack) {

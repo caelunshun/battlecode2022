@@ -5,6 +5,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import prototype2.attachment.archon.BaseArchonAttachment;
 import prototype2.attachment.builder.BuilderAttachment;
+import prototype2.attachment.builder.SacrificeBuilderAttachment;
 import prototype2.attachment.generic.*;
 import prototype2.attachment.laboratory.LaboratoryAttachment;
 import prototype2.attachment.miner.MinerAttachment;
@@ -56,11 +57,20 @@ public class RobotBuilder {
                 robot.addAttachment(new AttackAttachment(robot));
                 break;
             case BUILDER:
-                robot.addAttachment(new BuilderAttachment(robot));
+                int numBuilders = robot.getComms().getNumRobots(RobotCategory.BUILDER);
+                if (numBuilders >= BotConstants.MIN_BUILDERS
+                    && (robot.getRc().getTeamLeadAmount(robot.getRc().getTeam()) < 1000 || numBuilders >= BotConstants.MAX_BUILDERS)) {
+                    robot.addAttachment(new SacrificeBuilderAttachment(robot));
+                } else {
+                    robot.addAttachment(new BuilderAttachment(robot));
+                }
+                break;
             case WATCHTOWER:
                 robot.addAttachment(new AttackAttachment(robot));
+                break;
             case LABORATORY:
                 robot.addAttachment(new LaboratoryAttachment(robot));
+                break;
         }
     }
 }
