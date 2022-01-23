@@ -110,6 +110,7 @@ public final class Communications {
 
     public void addEnemyArchon(MapLocation loc) throws GameActionException {
         int slot = getFreeSlot(SEGMENT_ENEMY_ARCHONS);
+        if (slot == -1) return;
         BitEncoder enc = new BitEncoder();
         enc.writeMapLocation(loc);
         writeSlot(slot, enc.finish());
