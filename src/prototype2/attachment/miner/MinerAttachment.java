@@ -129,8 +129,12 @@ public class MinerAttachment extends Attachment {
         }
         for (MapLocation goldLoc : gold) {
             bestLead = goldLoc;
+            nav.advanceToward(bestLead);
+            return true;
         }
-
+        if(bestLead != null && bestLead.distanceSquaredTo(rc.getLocation()) <= rc.getType().actionRadiusSquared){
+            avoidRubble();
+        }
         if (bestLead != null) {
             nav.advanceToward(bestLead);
             return true;
@@ -239,4 +243,41 @@ public class MinerAttachment extends Attachment {
             robot.getComms().addCryForHelp(cry);
         }
     }
-}
+    public void avoidRubble() throws GameActionException {
+        rc.setIndicatorString("Im avoiding rubble");
+        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), RobotType.MINER.actionRadiusSquared);
+        int highestLead = 1;
+        MapLocation bestLead = null;
+        for (int i = 0; i < locs.length; i++) {
+            int lead = rc.senseLead(locs[i]);
+            if (lead > highestLead) {
+                highestLead = lead;
+                bestLead = locs[i];
+            }
+        }
+        if(bestLead == null){
+            return;
+        }
+        rc.setIndicatorString("" + bestLead);
+        MapLocation[] locsNextToLeadLocation = rc.getAllLocationsWithinRadiusSquared(bestLead, RobotType.MINER.actionRadiusSquared);
+        int lowestRubble = rc.senseRubble(bestLead);
+        MapLocation locWithLowestRubble = bestLead;
+        takeOutRobotLocLocations(locsNextToLeadLocation);
+        for (int i = 0; i < locsNextToLeadLocation.length; i++) {
+            if(locsNextToLeadLocation[i] == null) continue;
+            int rub = rc.senseRubble(locsNextToLeadLocation[i]);
+            if (rub < lowestRubble) {
+                lowestRubble = rub;
+                locWithLowestRubble = locsNextToLeadLocation[i];
+            }
+        }
+        if(rc.canMove(rc.getLocation().directionTo(locWithLowestRubble))) rc.move(rc.getLocation().directionTo(locWithLowestRubble));
+    }
+    public void takeOutRobotLocLocations(MapLocation[] locs) throws GameActionException{
+        for(int i = 0; i < locs.length; i++){
+            if(rc.senseRobotAtLocation(locs[i]) != null ){
+                locs[i] = null;
+            }
+        }
+    }
+    }

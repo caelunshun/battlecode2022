@@ -36,7 +36,7 @@ public class MinerDispersionAttachment extends Attachment {
 
         if (angle == null) {
             robot.moveRandom();
-            rc.setIndicatorString("Missing Angle");
+            //rc.setIndicatorString("Missing Angle");
             return;
         }
 
@@ -52,7 +52,7 @@ public class MinerDispersionAttachment extends Attachment {
             }
         }
 
-        rc.setIndicatorString("Angle: " + Math.toDegrees(angle));
+        //rc.setIndicatorString("Angle: " + Math.toDegrees(angle));
 
         if (!rc.isMovementReady()) return;
 
@@ -69,11 +69,11 @@ public class MinerDispersionAttachment extends Attachment {
 
         if (isBugging) {
             bugger.advance(target);
-            rc.setIndicatorString("Bugging Toward  " + target);
+            //rc.setIndicatorString("Bugging Toward  " + target);
             ++bugTurns;
         } else {
             nav.advanceToward(target);
-            rc.setIndicatorString("Dispersing Toward " + target);
+            //rc.setIndicatorString("Dispersing Toward " + target);
         }
     }
 
