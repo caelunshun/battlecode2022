@@ -10,7 +10,7 @@ public final class Navigator {
     private Robot robot;
 
     // Ring buffer of recently visited locations to avoid getting stuck
-    private MapLocation[] visited = new MapLocation[3];
+    private MapLocation[] visited = new MapLocation[4];
     private int visitedCursor = 0;
 
     private MapLocation target;
@@ -60,6 +60,8 @@ public final class Navigator {
 
         if (bestDir != null) {
             robot.getRc().move(bestDir);
+            System.arraycopy(visited, 0,visited,1,3);
+            visited[0] = robot.getRc().getLocation();
 
             MapLocation loc = robot.getRc().getLocation();
             visited[visitedCursor++] = loc;
