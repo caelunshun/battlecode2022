@@ -77,5 +77,6 @@ public final class Navigator {
             visited[i] = null;
         }
         visitedCursor = 0;
+        rubbleThreshold = 50;
     }
 }
