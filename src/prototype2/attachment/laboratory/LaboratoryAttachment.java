@@ -21,6 +21,10 @@ public class LaboratoryAttachment extends Attachment {
     }
 
     public boolean moreGold() throws GameActionException {
-        return true;
+        if(robot.getComms().canMakeGold()){
+            return true;
+        }
+        rc.setIndicatorString("I was told not to");
+        return false;
     }
 }

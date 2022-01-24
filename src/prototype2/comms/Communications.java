@@ -39,6 +39,7 @@ public final class Communications {
     private static final Range ENEMY_SPOTTED_LOCATIONS = new Range(21, 23);
     private static final Range ROBOT_COUNTS = new Range(23, 25);
     private static final int STRATEGY = 25;
+    private static final int COLLECT_GOLD = 26;
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -440,5 +441,20 @@ public final class Communications {
                 return (0xFF000000 & readSlot(ROBOT_COUNTS.start + 1))>>>24;
         }
         throw new RuntimeException("lol slot is 0-7");
+    }
+    public void makeGold() throws GameActionException{
+        writeSlot(COLLECT_GOLD, 1);
+    }
+    public void doNotMakeGold() throws GameActionException{
+        writeSlot(COLLECT_GOLD, 0);
+    }
+    public boolean canMakeGold() throws GameActionException{
+        if(isSlotFree(COLLECT_GOLD)){
+            writeSlot(COLLECT_GOLD, 1);
+        }
+        if(readSlot(COLLECT_GOLD) == 1){
+            return true;
+        }
+        return false;
     }
 }

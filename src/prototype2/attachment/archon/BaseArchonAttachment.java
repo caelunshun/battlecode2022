@@ -2,10 +2,7 @@ package prototype2.attachment.archon;
 
 import battlecode.common.*;
 import prototype1.Util;
-import prototype2.Attachment;
-import prototype2.BotConstants;
-import prototype2.Robot;
-import prototype2.Strategy;
+import prototype2.*;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;
 import prototype2.comms.Archon;
@@ -65,15 +62,20 @@ public class BaseArchonAttachment extends Attachment {
     private boolean isLead = false;
 
     private void build() throws GameActionException {
+
+
         int currentBuildIndex = robot.getComms().getBuildIndex();
         if (currentBuildIndex - lastBuiltIndex < rc.getArchonCount() - 1) {
             // No need to balance builds if we have tons of lead.
             if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2
-            && !(robot.getComms().getStrategy() == Strategy.TURTLE && isLead)) {
-                rc.setIndicatorString("Not Building");
+                    && !(robot.getComms().getStrategy() == Strategy.TURTLE && isLead)) {
+              //  rc.setIndicatorString("Not Building");
                 return;
             }
         }
+
+
+
 
         if (robot.getComms().getStrategy() == Strategy.TURTLE && !isLead) {
             rc.setIndicatorString("Not Building");

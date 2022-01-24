@@ -33,6 +33,7 @@ public class LeadArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        protMiners();
         updateStates();
         updateLeadAmounts();
         incrementBuildWeights();
@@ -45,7 +46,17 @@ public class LeadArchonAttachment extends Attachment {
         setLastRoundLead();
         setStrategy();
 
-        rc.setIndicatorString("Lead Archon. Strategy: " + robot.getComms().getStrategy() + " / Lead Build: " + robot.getComms().getLeadBuild());
+
+       // rc.setIndicatorString("Lead Archon. Strategy: " + robot.getComms().getStrategy() + " / Lead Build: " + robot.getComms().getLeadBuild());
+    }
+    private void protMiners() throws GameActionException{
+        if(robot.getComms().getNumRobots(RobotCategory.MINER) < 2){
+            robot.getComms().doNotMakeGold();
+            rc.setIndicatorString("oops. there are " + robot.getComms().getNumRobots(RobotCategory.WATCHTOWER_L1));
+        } else{
+
+            robot.getComms().makeGold();
+        }
     }
 
     // States reset each turn
