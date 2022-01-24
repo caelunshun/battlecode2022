@@ -10,4 +10,12 @@ public class EnemySpottedLocation {
         this.loc = loc;
         this.roundNumber = roundNumber;
     }
+
+    @Override
+    public String toString() {
+        return "EnemySpottedLocation{" +
+                "loc=" + loc +
+                ", roundNumber=" + roundNumber +
+                '}';
+    }
 }

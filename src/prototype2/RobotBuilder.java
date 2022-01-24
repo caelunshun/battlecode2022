@@ -14,6 +14,7 @@ import prototype2.attachment.sage.SageAttackAttachment;
 import prototype2.attachment.sage.SageMicroAttachment;
 import prototype2.attachment.soldier.SoldierMacroAttachment;
 import prototype2.attachment.soldier.SoldierMicroAttachment;
+import prototype2.attachment.watchtower.WatchtowerAttachment;
 
 public class RobotBuilder {
     private final RobotType type;
@@ -67,6 +68,7 @@ public class RobotBuilder {
                 break;
             case WATCHTOWER:
                 robot.addAttachment(new AttackAttachment(robot));
+                robot.addAttachment(new WatchtowerAttachment(robot));
                 break;
             case LABORATORY:
                 robot.addAttachment(new LaboratoryAttachment(robot));

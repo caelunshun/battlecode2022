@@ -23,6 +23,10 @@ public class BuildWeightTable {
         weights[ordinal] += amount;
     }
 
+    public int getWeight(int ordinal) {
+        return weights[ordinal];
+    }
+
     public int getHighestWeight() {
         int highest = -1;
         for (int i = 0; i < weights.length; i++) {

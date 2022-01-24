@@ -125,6 +125,15 @@ public final class Robot {
         return homeArchon;
     }
 
+    public MapLocation getLeadArchon() {
+        for (Archon archon : friendlyArchons) {
+            if (archon.isLead && !archon.isDestroyed) {
+                return archon.loc;
+            }
+        }
+        return null;
+    }
+
     public int getHomeArchonIndex() {
         return homeArchonIndex;
     }

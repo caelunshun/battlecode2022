@@ -111,9 +111,9 @@ public class LeadArchonAttachment extends Attachment {
                 if (nearbyEnemies) {
                     weightSoldier = 10;
                 }
-                weightBuilder = 15;
+                weightBuilder = 10;
                 if (nearbyEnemies) {
-                    weightBuilder = 10;
+                    weightBuilder = 6;
                 }
                 if ((areMinersSaturated || (lastLeadAmounts[0] < 2 && lastLeadAmounts[1] < 2 && lastLeadAmounts[2] < 2))
                         && rc.getRoundNum() > 300) {
@@ -158,7 +158,8 @@ public class LeadArchonAttachment extends Attachment {
             clearWeight(LeadBuild.WATCHTOWER);
         }
 
-        if (robot.getComms().getLeadBuild() == null) {
+        if (robot.getComms().getLeadBuild() == null
+            || buildTables.getWeight(buildTables.getHighestLeadWeight()) > 200) {
             LeadBuild build = buildTables.getHighestLeadWeight();
             robot.getComms().setLeadBuild(build);
             buildTables.clearWeight(build);
@@ -256,7 +257,7 @@ public class LeadArchonAttachment extends Attachment {
         if (rc.getRoundNum() < 25) return;
 
         Strategy strat;
-        if (totalLeadCollected < 400) {
+        if (totalLeadCollected / rc.getArchonCount() < 70 || rc.getMapWidth() * rc.getMapHeight() <= 1400) {
             strat = Strategy.TURTLE;
         } else {
             strat = Strategy.RUSH;

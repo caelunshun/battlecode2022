@@ -163,7 +163,10 @@ public class BaseArchonAttachment extends Attachment {
     }
 
     private void updateComms() throws GameActionException {
-        robot.getComms().moveFriendlyArchon(archonIndex, rc.getLocation());
+        Archon archon = robot.getFriendlyArchons().get(archonIndex);
+        archon.loc = rc.getLocation();
+        archon.isLead = isLead;
+        robot.getComms().updateFriendlyArchon(archonIndex, archon);
     }
 
     private void healRobots() throws GameActionException {

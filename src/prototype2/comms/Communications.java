@@ -61,7 +61,7 @@ public final class Communications {
         for (int i = SEGMENT_FRIENDLY_ARCHONS.start; i < SEGMENT_FRIENDLY_ARCHONS.end; i++) {
             if (!isSlotFree(i)) {
                 BitDecoder dec = new BitDecoder(readSlot(i));
-                res.add(new Archon(dec.readMapLocation(), dec.readBool(), dec.read(6)));
+                res.add(new Archon(dec.readMapLocation(), dec.readBool(), dec.read(6), dec.readBool()));
             }
         }
         return res;
@@ -84,27 +84,18 @@ public final class Communications {
         enc.writeMapLocation(loc);
         enc.writeBoolean(false);
         enc.write(numLeadLocations, 6);
+        enc.writeBoolean(false);
         writeSlot(slot, enc.finish());
         return slot - SEGMENT_FRIENDLY_ARCHONS.start;
     }
 
-    public void moveFriendlyArchon(int index, MapLocation newLoc) throws GameActionException {
+    public void updateFriendlyArchon(int index, Archon archon) throws GameActionException {
         int slot = SEGMENT_FRIENDLY_ARCHONS.start + index;
-        BitDecoder dec = new BitDecoder(readSlot(slot));
         BitEncoder enc = new BitEncoder();
-        dec.readMapLocation();
-        enc.writeMapLocation(newLoc);
-        enc.writeBoolean(dec.readBool());
-        enc.write(dec.read(6), 6);
-        writeSlot(slot, enc.finish());
-    }
-
-    public void setFriendlyArchonDead(int index) throws GameActionException {
-        int slot = SEGMENT_FRIENDLY_ARCHONS.start + index;
-        BitDecoder dec = new BitDecoder(readSlot(slot));
-        BitEncoder enc = new BitEncoder();
-        enc.writeMapLocation(dec.readMapLocation());
-        enc.writeBoolean(true);
+        enc.writeMapLocation(archon.loc);
+        enc.writeBoolean(archon.isDestroyed);
+        enc.write(archon.numLeadLocations, 6);
+        enc.writeBoolean(archon.isLead);
         writeSlot(slot, enc.finish());
     }
 
@@ -195,7 +186,7 @@ public final class Communications {
         if (clearSpotted(loc.loc)) return;
 
         int free = -1;
-        for (int i = SEGMENT_ENEMY_ARCHONS.start; i < SEGMENT_ENEMY_ARCHONS.end; i++) {
+        for (int i = ENEMY_SPOTTED_LOCATIONS.start; i < ENEMY_SPOTTED_LOCATIONS.end; i++) {
             if (isSlotFree(i)) {
                 free = i;
                 break;
@@ -215,7 +206,7 @@ public final class Communications {
         for (int i = 0; i < locs.length; i++) {
             if (locs[i] != null) {
                 if (rc.getRoundNum() - locs[i].roundNumber > 3) {
-                    clearSlot(SEGMENT_ENEMY_ARCHONS.start + i);
+                    clearSlot(ENEMY_SPOTTED_LOCATIONS.start + i);
                     return false;
                 } else if (locs[i].loc.distanceSquaredTo(enemyLoc) <= 9) {
                     return true;

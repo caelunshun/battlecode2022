@@ -25,6 +25,14 @@ public class BuildTables {
         goldTable.clearWeight(build.ordinal());
     }
 
+    public int getWeight(LeadBuild build) {
+        return leadTable.getWeight(build.ordinal());
+    }
+
+    public int getWeight(GoldBuild build) {
+        return goldTable.getWeight(build.ordinal());
+    }
+
     public LeadBuild getHighestLeadWeight() {
         return LeadBuild.values()[leadTable.getHighestWeight()];
     }

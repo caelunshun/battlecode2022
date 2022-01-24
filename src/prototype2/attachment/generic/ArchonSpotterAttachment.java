@@ -6,6 +6,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import prototype2.Attachment;
 import prototype2.Robot;
+import prototype2.comms.Archon;
 
 public class ArchonSpotterAttachment extends Attachment {
     public ArchonSpotterAttachment(Robot robot) {
@@ -35,7 +36,9 @@ public class ArchonSpotterAttachment extends Attachment {
             if (rc.canSenseLocation(loc)) {
                 RobotInfo rob = rc.senseRobotAtLocation(loc);
                 if (rob == null || rob.type != RobotType.ARCHON) {
-                    robot.getComms().setFriendlyArchonDead(i);
+                    Archon archon = robot.getFriendlyArchons().get(i);
+                    archon.isDestroyed = true;
+                    robot.getComms().updateFriendlyArchon(i, archon);
                 }
             }
         }
