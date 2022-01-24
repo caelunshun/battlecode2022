@@ -111,7 +111,7 @@ public class BuilderAttachment extends Attachment {
             if (rc.senseRobotAtLocation(loc) != null) continue;
 
             double score = 0;
-            score += Math.sqrt(loc.distanceSquaredTo(robot.getLeadArchon()));
+            score += Math.sqrt(loc.distanceSquaredTo(robot.getHomeArchon()));
             score += 0.3 * Math.sqrt(loc.distanceSquaredTo(Util.getCenterLocation(rc)));
             score += 0.3 * rc.senseRubble(loc);
             if (loc.x < 4  || loc.y < 4 || loc.x > rc.getMapWidth() - 4 || loc.y > rc.getMapHeight() - 4) {
