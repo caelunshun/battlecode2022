@@ -40,6 +40,7 @@ public final class Communications {
     private static final Range ROBOT_COUNTS = new Range(23, 25);
     private static final int STRATEGY = 25;
     private static final int COLLECT_GOLD = 26;
+    private static final int WATCHTOWER_BUILD_LOCATION = 27;
 
     public Communications(RobotController rc) {
         this.rc = rc;
@@ -456,5 +457,24 @@ public final class Communications {
             return true;
         }
         return false;
+    }
+    public void setWatchtowerBuildLocation(MapLocation loc) throws GameActionException{
+        if(loc == null){
+            resetWatchtowerBuildLocation();
+            return;
+        }
+        BitEncoder enc = new BitEncoder();
+        enc.writeMapLocation(loc);
+        writeSlot(WATCHTOWER_BUILD_LOCATION, enc.finish());
+    }
+    public void resetWatchtowerBuildLocation() throws GameActionException{
+        clearSlot(WATCHTOWER_BUILD_LOCATION);
+    }
+    public MapLocation getWatchtowerBuildLocation() throws GameActionException{
+        if(isSlotFree(WATCHTOWER_BUILD_LOCATION)){
+            return null;
+        }
+        BitDecoder dec = new BitDecoder(readSlot(WATCHTOWER_BUILD_LOCATION));
+        return dec.readMapLocation();
     }
 }

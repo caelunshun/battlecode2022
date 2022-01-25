@@ -75,7 +75,11 @@ public class BuilderAttachment extends Attachment {
         if (robot.getComms().getLeadBuild() != LeadBuild.WATCHTOWER) return false;
 
         if (!watchtowerTargetIsValid()) {
-            watchtowerTarget = getWatchtowerTarget();
+            if(getWatchtowerBuildLocation() == null){
+                watchtowerTarget = getWatchtowerTarget();
+            } else {
+                watchtowerTarget = getWatchtowerBuildLocation();
+            }
         }
         if (watchtowerTarget == null) {
             nav.advanceToward(Util.getCenterLocation(rc));
@@ -129,6 +133,9 @@ public class BuilderAttachment extends Attachment {
             }
         }
         return best;
+    }
+    private MapLocation getWatchtowerBuildLocation() throws GameActionException{
+        return robot.getComms().getWatchtowerBuildLocation();
     }
 
     private boolean isOnLattice(MapLocation loc) throws GameActionException {
