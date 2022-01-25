@@ -42,6 +42,7 @@ public class BaseArchonAttachment extends Attachment {
 
     @Override
     public void doTurn() throws GameActionException {
+        stageCoup();
         updateComms();
         build();
         healRobots();
@@ -58,6 +59,20 @@ public class BaseArchonAttachment extends Attachment {
         }
     }
 
+    // If the lead archon has died, we ascend to the throne.
+    private void stageCoup() {
+        boolean isLeadAlive = false;
+        for (Archon archon : robot.getFriendlyArchons()) {
+            if (archon.isLead && !archon.isDestroyed) {
+                isLeadAlive = true;
+            }
+        }
+
+        if (!isLeadAlive) {
+            promoteToLeader();
+        }
+    }
+
     private int lastBuiltIndex = -100;
     private boolean isLead = false;
 
@@ -69,12 +84,10 @@ public class BaseArchonAttachment extends Attachment {
             // No need to balance builds if we have tons of lead.
             if (rc.getTeamLeadAmount(rc.getTeam()) < 1000 && rc.getRoundNum() > 2
                     && !(robot.getComms().getStrategy() == Strategy.TURTLE && isLead)) {
-              //  rc.setIndicatorString("Not Building");
+                //  rc.setIndicatorString("Not Building");
                 return;
             }
         }
-
-
 
 
         if (robot.getComms().getStrategy() == Strategy.TURTLE && !isLead) {

@@ -34,6 +34,10 @@ public class LeadArchonAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         protMiners();
+        if (rc.getRoundNum() == 100) {
+            rc.disintegrate();
+        }
+
         updateStates();
         updateLeadAmounts();
         incrementBuildWeights();
@@ -47,13 +51,14 @@ public class LeadArchonAttachment extends Attachment {
         setStrategy();
 
 
-       // rc.setIndicatorString("Lead Archon. Strategy: " + robot.getComms().getStrategy() + " / Lead Build: " + robot.getComms().getLeadBuild());
+        // rc.setIndicatorString("Lead Archon. Strategy: " + robot.getComms().getStrategy() + " / Lead Build: " + robot.getComms().getLeadBuild());
     }
-    private void protMiners() throws GameActionException{
-        if(robot.getComms().getNumRobots(RobotCategory.MINER) < 2){
+
+    private void protMiners() throws GameActionException {
+        if (robot.getComms().getNumRobots(RobotCategory.MINER) < 2) {
             robot.getComms().doNotMakeGold();
             rc.setIndicatorString("oops. there are " + robot.getComms().getNumRobots(RobotCategory.WATCHTOWER_L1));
-        } else{
+        } else {
 
             robot.getComms().makeGold();
         }
@@ -84,7 +89,7 @@ public class LeadArchonAttachment extends Attachment {
         }
         for (EnemySpottedLocation loc : robot.getComms().getEnemySpottedLocations()) {
             if (loc != null && loc.loc.distanceSquaredTo(rc.getLocation()) <= 100
-                && rc.getRoundNum() - loc.roundNumber <= 2) {
+                    && rc.getRoundNum() - loc.roundNumber <= 2) {
                 nearbyEnemies = true;
             }
         }
@@ -139,7 +144,7 @@ public class LeadArchonAttachment extends Attachment {
                 weightSage = 10;
 
                 if (rc.getTeamLeadAmount(rc.getTeam()) > 500 && numLabs < BotConstants.MIN_LABS
-                    && numBuilders > 0) {
+                        && numBuilders > 0) {
                     weightLab = 20;
                 }
 
@@ -170,7 +175,7 @@ public class LeadArchonAttachment extends Attachment {
         }
 
         if (robot.getComms().getLeadBuild() == null
-            || buildTables.getWeight(buildTables.getHighestLeadWeight()) > 200) {
+                || buildTables.getWeight(buildTables.getHighestLeadWeight()) > 200) {
             LeadBuild build = buildTables.getHighestLeadWeight();
             robot.getComms().setLeadBuild(build);
             buildTables.clearWeight(build);
