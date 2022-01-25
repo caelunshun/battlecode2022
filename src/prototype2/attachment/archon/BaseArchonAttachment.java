@@ -1,7 +1,7 @@
 package prototype2.attachment.archon;
 
 import battlecode.common.*;
-import prototype1.Util;
+import prototype2.Util;
 import prototype2.*;
 import prototype2.build.GoldBuild;
 import prototype2.build.LeadBuild;

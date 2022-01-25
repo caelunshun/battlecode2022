@@ -1,6 +1,6 @@
 package prototype2.attachment.builder;
 
-import JFPROTO2.Util;
+import prototype2.Util;
 import battlecode.common.*;
 import prototype2.Attachment;
 import prototype2.Robot;
