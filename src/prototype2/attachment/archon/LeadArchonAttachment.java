@@ -34,10 +34,6 @@ public class LeadArchonAttachment extends Attachment {
     @Override
     public void doTurn() throws GameActionException {
         protMiners();
-        if (rc.getRoundNum() == 100) {
-            rc.disintegrate();
-        }
-
         updateStates();
         updateLeadAmounts();
         incrementBuildWeights();
@@ -45,6 +41,8 @@ public class LeadArchonAttachment extends Attachment {
         /*if (symmetry == null) {
             computeSymmetry();
         }*/
+
+        rc.setIndicatorString("Lead Archon. Strategy: " + robot.getComms().getStrategy() + " / Build: " + robot.getComms().getLeadBuild() + " / Num Builders: " + numBuilders);
 
         robot.getComms().clearRobotCounts();
         setLastRoundLead();
@@ -125,7 +123,7 @@ public class LeadArchonAttachment extends Attachment {
                 break;
             case TURTLE:
                 if (nearbyEnemies) {
-                    weightSoldier = 10;
+                    weightSoldier = 15;
                 }
                 weightBuilder = 10;
                 if (nearbyEnemies) {
@@ -174,11 +172,10 @@ public class LeadArchonAttachment extends Attachment {
             clearWeight(LeadBuild.WATCHTOWER);
         }
 
-        if (robot.getComms().getLeadBuild() == null
-                || buildTables.getWeight(buildTables.getHighestLeadWeight()) > 200) {
-            LeadBuild build = buildTables.getHighestLeadWeight();
-            robot.getComms().setLeadBuild(build);
-            buildTables.clearWeight(build);
+        if (robot.getComms().getLeadBuild() == null) {
+                LeadBuild build = buildTables.getHighestLeadWeight();
+                robot.getComms().setLeadBuild(build);
+                buildTables.clearWeight(build);
         }
         if (robot.getComms().getGoldBuild() == null) {
             GoldBuild build = buildTables.getHighestGoldWeight();
@@ -273,7 +270,7 @@ public class LeadArchonAttachment extends Attachment {
         if (rc.getRoundNum() < 25) return;
 
         Strategy strat;
-        if (totalLeadCollected / rc.getArchonCount() < 70 || rc.getMapWidth() * rc.getMapHeight() <= 1400) {
+        if (totalLeadCollected / rc.getArchonCount() < 60) {
             strat = Strategy.TURTLE;
         } else {
             strat = Strategy.RUSH;

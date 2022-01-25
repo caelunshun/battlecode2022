@@ -61,6 +61,8 @@ public class BaseArchonAttachment extends Attachment {
 
     // If the lead archon has died, we ascend to the throne.
     private void stageCoup() {
+        if (isLead) return;
+        if (inPregame) return;
         boolean isLeadAlive = false;
         for (Archon archon : robot.getFriendlyArchons()) {
             if (archon.isLead && !archon.isDestroyed) {
@@ -119,6 +121,10 @@ public class BaseArchonAttachment extends Attachment {
                     lastBuiltIndex = currentBuildIndex;
                 }
             }
+        }
+
+        if (leadBuild == LeadBuild.WATCHTOWER && rc.getTeamLeadAmount(rc.getTeam()) > RobotType.WATCHTOWER.buildCostLead + RobotType.SOLDIER.buildCostLead) {
+            tryBuild(RobotType.SOLDIER);
         }
     }
 
