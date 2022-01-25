@@ -285,6 +285,7 @@ public class LeadArchonAttachment extends Attachment {
         int arrayLocation = -1;
         for(int i = 0; i < locs.length; i++){
             if(locs[i].x % 2 != locs[i].y % 2){
+                if (rc.canSenseRobotAtLocation(locs[i])) continue;
                 int dist = locs[i].distanceSquaredTo(robot.getLeadArchon()) ;
                 // you can add + (int) Math.sqrt(Math.sqrt(locs[i].distanceSquaredTo(Util.getCenterLocation(rc)))) to make it closer to center
                 if( dist < smallestDistance){

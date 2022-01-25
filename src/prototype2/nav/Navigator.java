@@ -3,6 +3,7 @@ package prototype2.nav;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 import prototype2.Robot;
 import prototype2.Util;
 
@@ -80,5 +81,9 @@ public final class Navigator {
         }
         visitedCursor = 0;
         rubbleThreshold = 50;
+    }
+
+    private boolean isOnLattice(MapLocation loc) throws GameActionException {
+        return loc.x % 2 == loc.y % 2;
     }
 }

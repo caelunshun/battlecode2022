@@ -38,25 +38,17 @@ public class WatchtowerAttachment extends Attachment {
             return;
         }
 
-        if (rc.getLocation().distanceSquaredTo(robot.getFriendlyArchons().get(0).loc) >= 25
-            || nearestEnemy.distanceSquaredTo(robot.getFriendlyArchons().get(0).loc) >= 64) {
+        double dx = nearestEnemy.x - robot.getLeadArchon().x;
+        double dy = nearestEnemy.y - robot.getLeadArchon().y;
+        double enemyAngle = Math.atan2(dy, dx);
+        double ourAngle = Math.atan2(rc.getLocation().y - robot.getLeadArchon().y,
+                rc.getLocation().x - robot.getLeadArchon().x);
+        if (Util.cmpAngles(enemyAngle, ourAngle) > Math.PI / 2 && !rc.getLocation().equals(nearestEnemy)) {
+            enterPortable();
+            nav.advanceToward(nearestEnemy);
+        } else {
             enterTurret();
-            return;
         }
-
-        if (nearestEnemy.distanceSquaredTo(rc.getLocation()) > 81) {
-            enterTurret();
-            return;
-        }
-
-        if (rc.getLocation().distanceSquaredTo(robot.getFriendlyArchons().get(0).loc) < 4) {
-            enterTurret();
-            return;
-        }
-
-        enterPortable();
-
-        nav.advanceToward(nearestEnemy);
     }
 
     private boolean moveAwayFromArchon() throws GameActionException {
@@ -68,24 +60,50 @@ public class WatchtowerAttachment extends Attachment {
             }
         }
 
-        if (isAdjacent && !isOnLattice(rc.getLocation())) {
+        if (isAdjacent) {
             enterPortable();
             nav.advanceToward(Util.getCenterLocation(rc));
             return true;
         } else {
             enterTurret();
-            return false;
+        }
+
+        return false;
+    }
+
+    private void moveOntoLattice() throws GameActionException {
+        Direction best = null;
+        int leastRubble = 0;
+        for (Direction dir : Util.DIRECTIONS) {
+            MapLocation loc = rc.getLocation().add(dir);
+            if (!isOnLattice(loc)) continue;
+            if (!rc.canSenseLocation(loc)) continue;
+            if (!rc.canMove(dir)) continue;
+
+            int rubble = rc.senseRubble(loc);
+            if (best == null || rubble < leastRubble) {
+                best = dir;
+                leastRubble = rubble;
+            }
+        }
+
+        if (best == null) {
+            robot.moveRandom();
+        } else if (rc.canMove(best)) {
+            rc.move(best);
         }
     }
 
     private void enterTurret() throws GameActionException {
-        if (rc.getMode() == RobotMode.PORTABLE && rc.canTransform()) {
+        if (!isOnLattice(rc.getLocation())) {
+            moveOntoLattice();
+        } else if (rc.getMode() == RobotMode.PORTABLE && rc.canTransform()) {
             rc.transform();
         }
     }
 
     private void enterPortable() throws GameActionException {
-        if (rc.getMode() != RobotMode.PORTABLE && rc.canTransform()) {
+        if (rc.getMode() == RobotMode.TURRET && rc.canTransform()) {
             rc.transform();
         }
     }
