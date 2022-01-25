@@ -45,6 +45,7 @@ public class BuilderAttachment extends Attachment {
         if (rc.getLocation().distanceSquaredTo(robot.getHomeArchon()) >= 64) {
             for (Direction dir : Util.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
+                if (!rc.canSenseLocation(loc)) continue;
                 if (rc.senseRubble(loc) <= 20) {
                     if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
                         rc.buildRobot(RobotType.LABORATORY, dir);

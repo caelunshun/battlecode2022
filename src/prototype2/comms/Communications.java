@@ -62,7 +62,7 @@ public final class Communications {
         for (int i = SEGMENT_FRIENDLY_ARCHONS.start; i < SEGMENT_FRIENDLY_ARCHONS.end; i++) {
             if (!isSlotFree(i)) {
                 BitDecoder dec = new BitDecoder(readSlot(i));
-                res.add(new Archon(dec.readMapLocation(), dec.readBool(), dec.read(6), dec.readBool()));
+                res.add(new Archon(dec.readMapLocation(), dec.readBool(), dec.read(6), dec.readBool(), dec.readBool()));
             }
         }
         return res;
@@ -86,6 +86,7 @@ public final class Communications {
         enc.writeBoolean(false);
         enc.write(numLeadLocations, 6);
         enc.writeBoolean(false);
+        enc.writeBoolean(true);
         writeSlot(slot, enc.finish());
         return slot - SEGMENT_FRIENDLY_ARCHONS.start;
     }
@@ -97,6 +98,7 @@ public final class Communications {
         enc.writeBoolean(archon.isDestroyed);
         enc.write(archon.numLeadLocations, 6);
         enc.writeBoolean(archon.isLead);
+        enc.writeBoolean(archon.inPregame);
         writeSlot(slot, enc.finish());
     }
 
@@ -303,14 +305,12 @@ public final class Communications {
         for (RobotCategory cat : RobotCategory.values()) {
             setNumRobots(cat, 0);
         }
-        System.out.println("ROUND " + rc.getRoundNum() + ": Builders cleared");
     }
 
     private void setNumRobots(RobotCategory category, int amount) throws GameActionException {
         writeSlotEightBits(category.ordinal(), amount);
 
         if (category == RobotCategory.BUILDER) {
-            System.out.println("ROUND " + rc.getRoundNum() + ": Builders set to " + amount);
         }
     }
 

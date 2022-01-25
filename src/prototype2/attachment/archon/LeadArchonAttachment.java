@@ -270,7 +270,7 @@ public class LeadArchonAttachment extends Attachment {
         if (rc.getRoundNum() < 25) return;
 
         Strategy strat;
-        if (totalLeadCollected / rc.getArchonCount() < 60) {
+        if (totalLeadCollected / rc.getArchonCount() < 60 && rc.getMapWidth() * rc.getMapHeight() <= 1200) {
             strat = Strategy.TURTLE;
         } else {
             strat = Strategy.RUSH;

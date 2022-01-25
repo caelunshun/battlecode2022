@@ -10,11 +10,13 @@ public class Archon {
     public boolean isDestroyed;
     public int numLeadLocations;
     public boolean isLead;
+    public boolean inPregame;
 
-    public Archon(MapLocation loc, boolean isDestroyed, int numLeadLocations, boolean isLead) {
+    public Archon(MapLocation loc, boolean isDestroyed, int numLeadLocations, boolean isLead, boolean inPregame) {
         this.loc = loc;
         this.isDestroyed = isDestroyed;
         this.numLeadLocations = numLeadLocations;
         this.isLead = isLead;
+        this.inPregame = inPregame;
     }
 }

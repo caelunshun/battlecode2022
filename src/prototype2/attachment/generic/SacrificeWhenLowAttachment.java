@@ -2,6 +2,7 @@ package prototype2.attachment.generic;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 import prototype2.Attachment;
 import prototype2.Robot;
 import prototype2.nav.Navigator;
@@ -27,7 +28,10 @@ public class SacrificeWhenLowAttachment extends Attachment {
                 MapLocation sacrificeLoc = getSacrificeLocation();
                 if (rc.getLocation().equals(sacrificeLoc)) {
                     if (rc.getType().buildCostGold > 0) return;
-                    rc.disintegrate(); // Que Descanse En Paz
+
+                    if (rc.getType() != RobotType.SAGE && rc.getType() != RobotType.MINER) {
+                        rc.disintegrate(); // Que Descanse En Paz
+                    }
                 } else {
                     nav.advanceToward(sacrificeLoc);
                 }

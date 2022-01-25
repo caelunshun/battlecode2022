@@ -63,11 +63,14 @@ public class BaseArchonAttachment extends Attachment {
     private void stageCoup() {
         if (isLead) return;
         if (inPregame) return;
+        if (rc.getRoundNum() < 30) return;
         boolean isLeadAlive = false;
         for (Archon archon : robot.getFriendlyArchons()) {
             if (archon.isLead && !archon.isDestroyed) {
                 isLeadAlive = true;
             }
+
+            if (archon.inPregame) return;
         }
 
         if (!isLeadAlive) {
@@ -129,10 +132,12 @@ public class BaseArchonAttachment extends Attachment {
     }
 
     private void doPregame() throws GameActionException {
+        if (!inPregame) return;
         if (minersBuilt < BotConstants.getPregameMinersPerArchon(rc)) {
             if (tryBuild(RobotType.MINER)) {
                 ++minersBuilt;
             }
+            rc.setIndicatorString("Pregame");
         } else {
             inPregame = false;
             MapLocation targetArchon = getUnionArchon();
@@ -187,6 +192,7 @@ public class BaseArchonAttachment extends Attachment {
         Archon archon = robot.getFriendlyArchons().get(archonIndex);
         archon.loc = rc.getLocation();
         archon.isLead = isLead;
+        archon.inPregame = inPregame;
         robot.getComms().updateFriendlyArchon(archonIndex, archon);
     }
 
