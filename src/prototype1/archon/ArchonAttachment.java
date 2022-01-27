@@ -204,7 +204,9 @@ public class ArchonAttachment extends Attachment {
             Direction[] list = Arrays.copyOf(Util.DIRECTIONS, Util.DIRECTIONS.length);
             Util.shuffle(list);
             for(int i = 0; i < list.length; i++){
-                if(rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null){
+                MapLocation loc = rc.getLocation().add(list[i]);
+                if (!rc.canSenseLocation(loc)) continue;
+                if(rc.senseRobotAtLocation(loc) == null){
                     int leadScore = getLeadScore(rc.getLocation().add(list[i]));
                     if(leadScore > bestLeadScore || (leadScore == bestLeadScore && rc.senseRubble(rc.getLocation().add(list[i])) < rc.senseRubble(rc.getLocation().add(bestDir)) ) ){
                         bestLeadScore = leadScore;
@@ -220,8 +222,10 @@ public class ArchonAttachment extends Attachment {
             //lower score is better
             Direction bestDir = Direction.CENTER;
             for (int i = 0; i < list.length; i++) {
-                int testScore = rc.senseRubble(rc.getLocation().add(list[i]));
-                if (rc.senseRobotAtLocation(rc.getLocation().add(list[i])) == null) {
+                MapLocation loc = rc.getLocation().add(list[i]);
+                if (!rc.canSenseLocation(loc)) continue;
+                int testScore = rc.senseRubble(loc);
+                if (rc.senseRobotAtLocation(loc) == null) {
                     if (testScore < 40) {
                         lessThanForty.add(list[i]);
                     }
